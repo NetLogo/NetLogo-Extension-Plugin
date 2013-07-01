@@ -1,6 +1,6 @@
 sbtPlugin := true
 
-name := "netlogo-extension"
+name := "netlogo-extension-plugin"
 
 organization := "org.nlogo"
 
