@@ -26,15 +26,11 @@ object Plugin extends Plugin {
       packageBin in Compile <<= (packageBin in Compile, baseDirectory, streams, extName) map {
         (jar, base, s, name) =>
           IO.copyFile(jar, base / "%s.jar".format(name))
-          Process(("pack200 --modification-time=latest --effort=9 --strip-debug " +
-            "--no-keep-file-order --unknown-attribute=strip " +
-            "%s.jar.pack.gz %s.jar").format(name, name)).!!
         if(Process("git diff --quiet --exit-code HEAD").! == 0) {
           Process("git archive -o %s.zip --prefix=%s/ HEAD".format(name, name)).!!
           IO.createDirectory(base / name)
           IO.copyFile(base / "%s.jar".format(name), base / name / "%s.jar".format(name))
-          IO.copyFile(base / "%s.jar.pack.gz".format(name), base / name / "%s.jar.pack.gz".format(name))
-          Process("zip %s.zip %s/%s.jar %s/%s.jar.pack.gz".format(Seq.fill(5)(name): _*)).!!
+          Process("zip %s.zip %s/%s.jar".format(Seq.fill(3)(name): _*)).!!
           IO.delete(base / name)
         }
         else {
@@ -46,7 +42,6 @@ object Plugin extends Plugin {
 
       cleanFiles <++= (baseDirectory, extName) { (base, name) =>
         Seq(base / "%s.jar".format(name),
-          base / "%s.jar.pack.gz".format(name),
           base / "%s.zip".format(name))
       }
 
