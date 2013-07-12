@@ -32,6 +32,7 @@ object Plugin extends Plugin {
             path.getName != "scala-library.jar" &&
             !path.getName.startsWith("NetLogo"))
 
+        IO.copyFile(jar, base / "%s.jar".format(name))
         libraryJarPaths foreach (path => IO.copyFile(path, base / path.getName))
 
         if(Process("git diff --quiet --exit-code HEAD").! == 0) {
