@@ -4,4 +4,4 @@ name := "netlogo-extension-plugin"
 
 organization := "org.nlogo"
 
-version := "1.0_5.0.x"
+version := "1.1_5.0.x"
