@@ -32,19 +32,21 @@ object Plugin extends Plugin {
             path.getName != "scala-library.jar" &&
             !path.getName.startsWith("NetLogo"))
 
+        IO.copyFile(jar, base / "%s.jar".format(name))
         libraryJarPaths foreach (path => IO.copyFile(path, base / path.getName))
 
-        (libraryJarPaths.map(_.getName) :+ "%s.jar".format(name)) foreach (
+        (libraryJarPaths.map(_.getName) :+ "%s.jar".format(name)) foreach {
           n =>
-            Process(("pack200 --modification-time=latest --effort=9 --strip-debug " +
-              "--no-keep-file-order --unknown-attribute=strip %s.jar.pack.gz %s.jar").format(n, n)).!!
-        )
+            val cmd = ("pack200 --modification-time=latest --effort=9 --strip-debug " +
+              "--no-keep-file-order --unknown-attribute=strip %s.pack.gz %s").format(n, n)
+            Process(cmd).!!
+        }
 
         if(Process("git diff --quiet --exit-code HEAD").! == 0) {
           Process("git archive -o %s.zip --prefix=%s/ HEAD".format(name, name)).!!
           IO.createDirectory(base / name)
           val zipExtraJars = libraryJarPaths.map(_.getName) :+ "%s.jar".format(name)
-          val zipExtras    = zipExtraJars flatMap (x => List(x, x + ".jar.pack.gz"))
+          val zipExtras    = zipExtraJars flatMap (x => List(x, x + ".pack.gz"))
           zipExtras foreach (extra => IO.copyFile(base / extra, base / name / extra))
           Process("zip -r %s.zip ".format(name) + zipExtras.map(name + "/" + _).mkString(" ")).!!
           IO.delete(base / name)
