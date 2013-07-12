@@ -25,19 +25,30 @@ object Plugin extends Plugin {
 
       packageBin in Compile <<= (packageBin in Compile, baseDirectory, streams, extName) map {
         (jar, base, s, name) =>
-          IO.copyFile(jar, base / "%s.jar".format(name))
+
+        val libraryJarPaths =
+          classpath.files.filter (path =>
+            path.getName.endsWith(".jar") &&
+            path.getName != "scala-library.jar" &&
+            !path.getName.startsWith("NetLogo"))
+
+        libraryJarPaths foreach (path => IO.copyFile(path, base / path.getName))
+
         if(Process("git diff --quiet --exit-code HEAD").! == 0) {
           Process("git archive -o %s.zip --prefix=%s/ HEAD".format(name, name)).!!
           IO.createDirectory(base / name)
-          IO.copyFile(base / "%s.jar".format(name), base / name / "%s.jar".format(name))
-          Process("zip %s.zip %s/%s.jar".format(Seq.fill(3)(name): _*)).!!
+          val zipExtras = libraryJarPaths.map(_.getName) :+ "%s.jar".format(name)
+          zipExtras foreach (extra => IO.copyFile(base / extra, base / name / extra))
+          Process("zip -r %s.zip ".format(name) + zipExtras.map(name + "/" + _).mkString(" ")).!!
           IO.delete(base / name)
         }
         else {
           s.log.warn("working tree not clean; no zip archive made")
           IO.delete(base / "%s.zip".format(name))
         }
+
         jar
+
       },
 
       cleanFiles <++= (baseDirectory, extName) { (base, name) =>
