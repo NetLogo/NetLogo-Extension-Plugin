@@ -23,8 +23,8 @@ object Plugin extends Plugin {
         )
       },
 
-      packageBin in Compile <<= (packageBin in Compile, baseDirectory, streams, extName) map {
-        (jar, base, s, name) =>
+      packageBin in Compile <<= (packageBin in Compile, dependencyClasspath in Runtime, baseDirectory, streams, extName) map {
+        (jar, classpath, base, s, name) =>
 
         val libraryJarPaths =
           classpath.files.filter (path =>
