@@ -1,30 +1,38 @@
-import sbt._, Keys._
+package org.nlogo.build
 
-object Plugin extends Plugin {
+import sbt._, Keys._, plugins.JvmPlugin
 
-  object NetLogoExtension {
+object NetLogoExtension extends AutoPlugin {
 
-    val extName      = SettingKey[String]("extension-name")
-    val classManager = SettingKey[String]("extension-class-manager")
+  // this is needed because we override settings like `packageBin`, see below,
+  // which are populated by JvmPlugin. -- RG 6/22/15
+  override def requires: Plugins = JvmPlugin
 
-    val settings = Seq(
+  object autoImport {
+    val netLogoExtName      = settingKey[String]("extension-name")
+    val netLogoClassManager = settingKey[String]("extension-class-manager")
+  }
 
-      extName <<= name,
+  import autoImport._
 
-      artifactName <<= extName { name => (_, _, _) => "%s.jar".format(name) },
+  override lazy val projectSettings = Seq(
 
-      packageOptions <<= (extName, classManager) map { (name, cm) =>
-        Seq(
-          Package.ManifestAttributes(
-            ("Extension-Name", name),
-            ("Class-Manager",  cm),
-            ("NetLogo-Extension-API-Version", "5.0")
-          )
+    netLogoExtName <<= name,
+
+    artifactName <<= netLogoExtName { name => (_, _, _) => "%s.jar".format(name) },
+
+    packageOptions <<= (netLogoExtName, netLogoClassManager) map { (name, cm) =>
+      Seq(
+        Package.ManifestAttributes(
+          ("Extension-Name", name),
+          ("Class-Manager",  cm),
+          ("NetLogo-Extension-API-Version", "5.0")
         )
-      },
+      )
+    },
 
-      packageBin in Compile <<= (packageBin in Compile, dependencyClasspath in Runtime, baseDirectory, streams, extName) map {
-        (jar, classpath, base, s, name) =>
+    packageBin in Compile <<= (packageBin in Compile, dependencyClasspath in Runtime, baseDirectory, streams, netLogoExtName) map {
+      (jar, classpath, base, s, name) =>
 
         val libraryJarPaths =
           classpath.files.filter (path =>
@@ -50,15 +58,13 @@ object Plugin extends Plugin {
 
         jar
 
-      },
+    },
 
-      cleanFiles <++= (baseDirectory, extName) { (base, name) =>
-        Seq(base / "%s.jar".format(name),
-          base / "%s.zip".format(name))
-      }
+    cleanFiles <++= (baseDirectory, netLogoExtName) { (base, name) =>
+      Seq(base / "%s.jar".format(name),
+        base / "%s.zip".format(name))
+    }
 
-    )
-
-  }
+  )
 
 }
