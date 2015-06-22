@@ -11,6 +11,7 @@ object NetLogoExtension extends AutoPlugin {
   object autoImport {
     val netLogoExtName      = settingKey[String]("extension-name")
     val netLogoClassManager = settingKey[String]("extension-class-manager")
+    val netLogoZipSources   = settingKey[Boolean]("extension-zip-sources")
   }
 
   import autoImport._
@@ -18,6 +19,8 @@ object NetLogoExtension extends AutoPlugin {
   override lazy val projectSettings = Seq(
 
     netLogoExtName <<= name,
+
+    netLogoZipSources := true,
 
     artifactName <<= netLogoExtName { name => (_, _, _) => "%s.jar".format(name) },
 
@@ -31,24 +34,32 @@ object NetLogoExtension extends AutoPlugin {
       )
     },
 
-    packageBin in Compile <<= (packageBin in Compile, dependencyClasspath in Runtime, baseDirectory, streams, netLogoExtName) map {
-      (jar, classpath, base, s, name) =>
+    packageBin in Compile <<= (
+      packageBin in Compile,
+      dependencyClasspath in Runtime,
+      baseDirectory,
+      streams,
+      netLogoExtName,
+      netLogoZipSources) map {
+      (jar, classpath, base, s, name, zipSources) =>
 
         val libraryJarPaths =
           classpath.files.filter (path =>
             path.getName.endsWith(".jar") &&
-            path.getName != "scala-library.jar" &&
+            !path.getName.startsWith("scala-library") &&
             !path.getName.startsWith("NetLogo"))
 
         IO.copyFile(jar, base / "%s.jar".format(name))
         libraryJarPaths foreach (path => IO.copyFile(path, base / path.getName))
 
         if(Process("git diff --quiet --exit-code HEAD").! == 0) {
-          Process("git archive -o %s.zip --prefix=%s/ HEAD".format(name, name)).!!
-          IO.createDirectory(base / name)
+          if (zipSources) {
+            Process("git archive -o %s.zip --prefix=%s/ HEAD".format(name, name)).!!
+          }
           val zipExtras = libraryJarPaths.map(_.getName) :+ "%s.jar".format(name)
           zipExtras foreach (extra => IO.copyFile(base / extra, base / name / extra))
-          Process("zip -r %s.zip ".format(name) + zipExtras.map(name + "/" + _).mkString(" ")).!!
+          val cmd = "zip -r %s.zip ".format(name) + zipExtras.map(name + "/" + _).mkString(" ")
+          Process(cmd).!!
           IO.delete(base / name)
         }
         else {
