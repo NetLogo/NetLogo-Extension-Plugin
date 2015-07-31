@@ -1,8 +1,8 @@
 # NetLogo Extension Plugin
 
-This plugin provides common build boilerplate for NetLogo extensions.  NetLogo extensions that reference NetLogo `master` (or any other 5.1-based branch of NetLogo) should use the `master` branch of this repo.  5.0.x-based NetLogo extensions should use this repo's `5.0.x` branch.
+This plugin provides common build boilerplate for NetLogo 5.x-series extensions.
 
-Currently, the plugin targets **SBT 0.12.**
+Currently, the plugin targets **SBT 0.13.**
 
 ## Building
 
