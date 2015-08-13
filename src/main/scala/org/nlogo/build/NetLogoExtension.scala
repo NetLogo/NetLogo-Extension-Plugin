@@ -50,7 +50,7 @@ object NetLogoExtension extends AutoPlugin {
           if (netLogoZipSources.value) {
             Process(s"git archive -o $name.zip --prefix=$name/ HEAD").!!
           }
-          val zipExtras = libraryJarPaths.map(_.getName) :+ s"$name.value.jar"
+          val zipExtras = libraryJarPaths.map(_.getName) :+ s"$name.jar"
           zipExtras foreach (extra => IO.copyFile(baseDir / extra, baseDir / name / extra))
           val extrasStr = zipExtras.map(name + "/" + _).mkString(" ")
           val cmd = s"zip -r $name.zip ${extrasStr}"
