@@ -12,6 +12,7 @@ object NetLogoExtension extends AutoPlugin {
     val netLogoExtName      = settingKey[String]("extension-name")
     val netLogoClassManager = settingKey[String]("extension-class-manager")
     val netLogoZipSources   = settingKey[Boolean]("extension-zip-sources")
+    val netLogoZipExtras    = taskKey[Seq[(File, String)]]("extension-zip-extras")
   }
 
   import autoImport._
@@ -21,6 +22,15 @@ object NetLogoExtension extends AutoPlugin {
     netLogoExtName := name.value,
 
     netLogoZipSources := true,
+
+    netLogoZipExtras := {
+      (dependencyClasspath in Runtime).value.files
+        .filter(path =>
+          path.getName.endsWith(".jar") &&
+          !path.getName.startsWith("scala-library") &&
+          !path.getName.startsWith("NetLogo"))
+        .map(path => (path, path.getName))
+    },
 
     artifactName := ((_, _, _) => s"${name.value}.jar"),
 
@@ -37,25 +47,17 @@ object NetLogoExtension extends AutoPlugin {
         val jar     = (packageBin in Compile).value
         val name    = netLogoExtName.value
 
-        val libraryJarPaths =
-          (dependencyClasspath in Runtime).value.files.filter (path =>
-            path.getName.endsWith(".jar") &&
-            !path.getName.startsWith("scala-library") &&
-            !path.getName.startsWith("NetLogo"))
-
-        IO.copyFile(jar, baseDir / s"$name.jar")
-        libraryJarPaths foreach (path => IO.copyFile(path, baseDir / path.getName))
-
         if(Process("git diff --quiet --exit-code HEAD").! == 0) {
-          if (netLogoZipSources.value) {
-            Process(s"git archive -o $name.zip --prefix=$name/ HEAD").!!
+          val sourcesToZip: Seq[(File, String)] =
+            if (netLogoZipSources.value) {
+              val allFiles = Process(s"git ls-files").lines_!.filterNot(_ == ".gitignore")
+              allFiles.map(new File(_)) zip allFiles
+            } else
+              Seq()
+          val zipMap = (sourcesToZip ++ netLogoZipExtras.value :+ (jar -> s"$name.jar")).map {
+            case (file, zipPath) => (file, s"$name/$zipPath")
           }
-          val zipExtras = libraryJarPaths.map(_.getName) :+ s"$name.jar"
-          zipExtras foreach (extra => IO.copyFile(baseDir / extra, baseDir / name / extra))
-          val extrasStr = zipExtras.map(name + "/" + _).mkString(" ")
-          val cmd = s"zip -r $name.zip ${extrasStr}"
-          Process(cmd).!!
-          IO.delete(baseDir / name)
+          IO.zip(zipMap, baseDir / s"$name.zip")
         }
         else {
           streams.value.log.warn("working tree not clean; no zip archive made")
