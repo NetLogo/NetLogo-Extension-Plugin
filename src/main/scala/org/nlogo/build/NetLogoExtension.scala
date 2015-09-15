@@ -47,7 +47,7 @@ object NetLogoExtension extends AutoPlugin {
         val jar     = (packageBin in Compile).value
         val name    = netLogoExtName.value
 
-        if(Process("git diff --quiet --exit-code HEAD").! == 0) {
+        if(isSnapshot.value || Process("git diff --quiet --exit-code HEAD", baseDir).! == 0) {
           val sourcesToZip: Seq[(File, String)] =
             if (netLogoZipSources.value) {
               val allFiles = Process(s"git ls-files").lines_!.filterNot(_ == ".gitignore")
@@ -60,7 +60,7 @@ object NetLogoExtension extends AutoPlugin {
           IO.zip(zipMap, baseDir / s"$name.zip")
         }
         else {
-          streams.value.log.warn("working tree not clean; no zip archive made")
+          streams.value.log.warn("working tree not clean when packaging; no zip archive made")
           IO.delete(baseDir / s"$name.zip")
         }
 
