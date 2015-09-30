@@ -4,26 +4,66 @@ import sbt._, Keys._, plugins.JvmPlugin
 
 object NetLogoExtension extends AutoPlugin {
 
+  trait Target {
+    def producedFiles(fileMap: Seq[(File, String)]): Seq[File]
+    def create(fileMap: Seq[(File, String)]): Unit
+  }
+
+  class ZipTarget(extName: String, baseDir: File, includeSources: Boolean) extends Target {
+    override def producedFiles(fileMap: Seq[(File, String)]): Seq[File] =
+      Seq(baseDir / s"$extName.zip")
+
+    override def create(sourceMap: Seq[(File, String)]): Unit = {
+      val zipMap = sourceMap.map { case (file, path) => (file, s"$extName/$path") }
+      IO.zip(zipMap, baseDir / s"$extName.zip")
+    }
+
+    private def sourcesToZip: Seq[(File, String)] =
+      if (includeSources) {
+        val allFiles = Process(s"git ls-files", baseDir).lines_!.filterNot(_ == ".gitignore")
+        allFiles.map(new File(_)) zip allFiles
+      } else
+        Seq()
+  }
+
+  class DirectoryTarget(baseDir: File) extends Target {
+    override def producedFiles(fileMap: Seq[(File, String)]): Seq[File] =
+      fileMap.map(_._2).map(baseDir / _).filterNot(fileMap.contains)
+
+    override def create(sourceMap: Seq[(File, String)]): Unit = {
+      val files = sourceMap.map {
+        case (file, name) => (file, baseDir / name)
+      }
+      IO.copy(files, overwrite = true)
+    }
+  }
+
   // this is needed because we override settings like `packageBin`, see below,
   // which are populated by JvmPlugin. -- RG 6/22/15
   override def requires: Plugins = JvmPlugin
 
   object autoImport {
-    val netLogoExtName      = settingKey[String]("extension-name")
-    val netLogoClassManager = settingKey[String]("extension-class-manager")
-    val netLogoZipSources   = settingKey[Boolean]("extension-zip-sources")
-    val netLogoZipExtras    = taskKey[Seq[(File, String)]]("extension-zip-extras")
+    val netLogoExtName       = settingKey[String]("extension-name")
+    val netLogoClassManager  = settingKey[String]("extension-class-manager")
+    val netLogoZipSources    = settingKey[Boolean]("extension-zip-sources")
+    val netLogoTarget        = settingKey[Target]("extension-target")
+    val netLogoPackageExtras = taskKey[Seq[(File, String)]]("extension-package-extras")
   }
 
   import autoImport._
+
+  val netLogoPackagedFiles = taskKey[Seq[(File, String)]]("extension-packaged-files")
 
   override lazy val projectSettings = Seq(
 
     netLogoExtName := name.value,
 
+    netLogoTarget :=
+      new ZipTarget(netLogoExtName.value, baseDirectory.value, netLogoZipSources.value),
+
     netLogoZipSources := true,
 
-    netLogoZipExtras := {
+    netLogoPackageExtras := {
       (dependencyClasspath in Runtime).value.files
         .filter(path =>
           path.getName.endsWith(".jar") &&
@@ -32,7 +72,11 @@ object NetLogoExtension extends AutoPlugin {
         .map(path => (path, path.getName))
     },
 
-    artifactName := ((_, _, _) => s"${name.value}.jar"),
+    artifactName := ((_, _, _) => s"${netLogoExtName.value}.jar"),
+
+    netLogoPackagedFiles := {
+      netLogoPackageExtras.value :+ ((artifactPath in packageBin in Compile).value -> s"${netLogoExtName.value}.jar")
+    },
 
     packageOptions +=
       Package.ManifestAttributes(
@@ -42,38 +86,25 @@ object NetLogoExtension extends AutoPlugin {
       ),
 
     packageBin in Compile := {
+        val jar = (packageBin in Compile).value
 
-        val baseDir = baseDirectory.value
-        val jar     = (packageBin in Compile).value
-        val name    = netLogoExtName.value
-
-        if(isSnapshot.value || Process("git diff --quiet --exit-code HEAD", baseDir).! == 0) {
-          val sourcesToZip: Seq[(File, String)] =
-            if (netLogoZipSources.value) {
-              val allFiles = Process(s"git ls-files").lines_!.filterNot(_ == ".gitignore")
-              allFiles.map(new File(_)) zip allFiles
-            } else
-              Seq()
-          val zipMap = (sourcesToZip ++ netLogoZipExtras.value :+ (jar -> s"$name.jar")).map {
-            case (file, zipPath) => (file, s"$name/$zipPath")
-          }
-          IO.zip(zipMap, baseDir / s"$name.zip")
-        }
-        else {
-          streams.value.log.warn("working tree not clean when packaging; no zip archive made")
-          IO.delete(baseDir / s"$name.zip")
+        if (isSnapshot.value || Process("git diff --quiet --exit-code HEAD", baseDirectory.value).! == 0) {
+          netLogoTarget.value.create(netLogoPackagedFiles.value)
+        } else {
+          streams.value.log.warn("working tree not clean when packaging; target not created")
+          IO.delete(netLogoTarget.value.producedFiles(netLogoPackagedFiles.value))
         }
 
         jar
-
     },
 
-    cleanFiles ++=
-      Seq(
-        baseDirectory.value / s"${netLogoExtName.value}.jar",
-        baseDirectory.value / s"${netLogoExtName.value}.zip"
-      )
+    clean := {
+      clean.value
+      IO.delete(netLogoTarget.value.producedFiles(netLogoPackagedFiles.value))
+    }
 
   )
 
+  def directoryTarget(targetDirectory: File): Target =
+    new DirectoryTarget(targetDirectory)
 }
