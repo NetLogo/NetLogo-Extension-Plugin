@@ -10,7 +10,37 @@ Simply run the `package` SBT command to build a new version of the plugin `.jar`
 
 ## Usage
 
-For an example usage of this plugin, please see the [Web extension](https://github.com/NetLogo/Web-Extension/)'s [`plugins.sbt`](https://github.com/NetLogo/Web-Extension/blob/master/project/plugins.sbt) and [`build.sbt`](https://github.com/NetLogo/Web-Extension/blob/master/build.sbt).
+For an example usage of this plugin, please see the [NetLogo extension activator template](https://github.com/NetLogo/netlogo-extension-activator)'s [`plugins.sbt`](https://github.com/NetLogo/netlogo-extension-activator/blob/master/project/plugins.sbt) and [`build.sbt`](https://github.com/NetLogo/netlogo-extension-activator/blob/master/build.sbt).
+
+### Project Files
+
+`project/plugins.sbt`
+
+```scala
+addSbtPlugin("org.nlogo" % "netlogo-extension-plugin" % "2.3_5.x" from
+  "http://ccl.northwestern.edu/devel/netlogo-extension-plugin-2.3_5.x.jar")
+```
+
+`build.sbt`
+
+```scala
+enablePlugins(org.nlogo.build.NetLogoExtension)
+
+netLogoClassManager := "HelloScalaExtension"
+
+netLogoExtName      := "helloscala"
+
+netLogoZipSources   := false
+```
+
+### Building to Base Directory
+
+By default, the NetLogo Extension Plugin builds a zip file containing all artifacts.
+If you would like it to extract the sbt base directory instead, you can use:
+
+```scala
+netLogoTarget := org.nlogo.build.NetLogoExtension.directoryTarget(baseDirectory.value)
+```
 
 ## Terms of Use
 

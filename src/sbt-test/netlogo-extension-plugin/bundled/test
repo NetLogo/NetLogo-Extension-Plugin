@@ -1,0 +1,6 @@
+> package
+$ exists helloscala.jar
+$ exists commons-lang-2.6.jar
+> clean
+$ absent helloscala.jar
+$ absent commons-lang-2.6.jar
