@@ -64,7 +64,7 @@ object NetLogoExtension extends AutoPlugin {
     netLogoZipSources := true,
 
     netLogoPackageExtras := {
-      (dependencyClasspath in Runtime).value.files
+      (externalDependencyClasspath in Runtime).value.files
         .filter(path =>
           path.getName.endsWith(".jar") &&
           !path.getName.startsWith("scala-library") &&
