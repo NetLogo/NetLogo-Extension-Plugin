@@ -15,9 +15,9 @@ javacOptions ++= Seq("-g", "-deprecation", "-Xlint:all", "-encoding", "us-ascii"
 
 name := "Hello-Extension"
 
-libraryDependencies ++= Seq(
-  "org.nlogo" % "NetLogo" % "5.3-LevelSpace" from "http://ccl.northwestern.edu/devel/NetLogo-5.3-LevelSpace-3a6b9b4.jar",
-  "commons-lang" % "commons-lang" % "2.6")
+libraryDependencies ++= Seq("commons-lang" % "commons-lang" % "2.6")
+
+netLogoVersion      := "6.0-M1"
 
 netLogoClassManager := "HelloScalaExtension"
 

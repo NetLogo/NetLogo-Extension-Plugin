@@ -1,6 +1,6 @@
 # NetLogo Extension Plugin
 
-This plugin provides common build boilerplate for NetLogo 5.x-series extensions.
+This plugin provides common build boilerplate for NetLogo 5.3.1 and later extensions. For versions before 5.3.1, please refer to [version 2.2_5.3](https://github.com/NetLogo/NetLogo-Extension-Plugin/tree/v2.2_5.3-M1)
 
 Currently, the plugin targets **SBT 0.13.**
 
@@ -17,14 +17,20 @@ For an example usage of this plugin, please see the [NetLogo extension activator
 `project/plugins.sbt`
 
 ```scala
-addSbtPlugin("org.nlogo" % "netlogo-extension-plugin" % "2.3_5.x" from
-  "http://ccl.northwestern.edu/devel/netlogo-extension-plugin-2.3_5.x.jar")
+resolvers += Resolver.url(
+  "NetLogo-JVM",
+    url("http://dl.bintray.com/content/netlogo/NetLogo-JVM"))(
+        Resolver.ivyStylePatterns)
+
+addSbtPlugin("org.nlogo" % "netlogo-extension-plugin" % "3.0-M1")
 ```
 
 `build.sbt`
 
 ```scala
 enablePlugins(org.nlogo.build.NetLogoExtension)
+
+netLogoVersion      := "5.3.1"
 
 netLogoClassManager := "HelloScalaExtension"
 

@@ -43,6 +43,7 @@ object NetLogoExtension extends AutoPlugin {
   override def requires: Plugins = JvmPlugin
 
   object autoImport {
+    val netLogoVersion       = settingKey[String]("version of NetLogo to depend on")
     val netLogoExtName       = settingKey[String]("extension-name")
     val netLogoClassManager  = settingKey[String]("extension-class-manager")
     val netLogoZipSources    = settingKey[Boolean]("extension-zip-sources")
@@ -101,7 +102,13 @@ object NetLogoExtension extends AutoPlugin {
     clean := {
       clean.value
       IO.delete(netLogoTarget.value.producedFiles(netLogoPackagedFiles.value))
-    }
+    },
+
+    resolvers += Resolver.bintrayRepo("content/netlogo", "NetLogo-JVM"),
+
+    libraryDependencies ++= Seq(
+      "org.nlogo" % "netlogo" % netLogoVersion.value intransitive,
+      "org.nlogo" % "netlogo" % netLogoVersion.value % "test" intransitive() classifier "tests")
 
   )
 
