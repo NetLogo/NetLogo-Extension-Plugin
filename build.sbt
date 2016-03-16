@@ -1,11 +1,17 @@
 sbtPlugin := true
 
-name := "netlogo-extension-plugin"
+scalaVersion := "2.10.6"
 
 organization := "org.nlogo"
 
-scalaVersion := "2.10.5"
+name         := "netlogo-extension-plugin"
 
-version := "2.4_5.3.x"
+version      := "3.0-M1"
 
-isSnapshot := true
+isSnapshot   := true
+
+licenses  += ("Public Domain", url("http://creativecommons.org/licenses/publicdomain/"))
+
+bintrayRepository   := "NetLogo-JVM"
+
+bintrayOrganization := Some("netlogo")
