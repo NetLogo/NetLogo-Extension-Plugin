@@ -69,7 +69,7 @@ object NetLogoExtension extends AutoPlugin {
         .filter(path =>
           path.getName.endsWith(".jar") &&
           !path.getName.startsWith("scala-library") &&
-          !path.getName.startsWith("NetLogo"))
+          !path.getName.startsWith("netlogo"))
         .map(path => (path, path.getName))
     },
 
@@ -100,17 +100,44 @@ object NetLogoExtension extends AutoPlugin {
     },
 
     clean := {
-      clean.value
+      val _ = clean.value
       IO.delete(netLogoTarget.value.producedFiles(netLogoPackagedFiles.value))
-    },
+    }
 
-    resolvers += Resolver.bintrayRepo("content/netlogo", "NetLogo-JVM"),
+  ) ++ netLogoJarSettings
 
-    libraryDependencies ++= Seq(
-      "org.nlogo" % "netlogo" % netLogoVersion.value intransitive,
-      "org.nlogo" % "netlogo" % netLogoVersion.value % "test" intransitive() classifier "tests")
+  def netLogoJarSettings: Seq[Setting[_]] = {
 
-  )
+    val netLogoJarFile =
+      Option(System.getProperty("netlogo.jar.file"))
+        .map { f =>
+          val jar = file(f)
+          val testJar = file(f.replaceAllLiterally(".jar", "-tests.jar"))
+          Seq(unmanagedJars in Compile ++= Seq(jar, testJar))
+        }
+
+    val netLogoJarURL =
+      Option(System.getProperty("netlogo.jar.url"))
+        .map { url =>
+          val urlVersion = url.split("/").last
+            .stripPrefix("NetLogo")
+            .stripPrefix("-")
+            .stripSuffix(".jar")
+          val version = if (urlVersion == "") "DEV" else urlVersion
+          val testUrl = url.replaceAllLiterally(".jar", "-tests.jar")
+          Seq(libraryDependencies ++= Seq(
+            "org.nlogo" % "NetLogo" % version changing() from url,
+            "org.nlogo" % "NetLogo-tests" % version changing() from testUrl))
+        }
+
+    (netLogoJarFile orElse netLogoJarURL).getOrElse {
+      Seq(
+        resolvers += Resolver.bintrayRepo("content/netlogo", "NetLogo-JVM"),
+        libraryDependencies ++= Seq(
+          "org.nlogo" % "netlogo" % netLogoVersion.value intransitive,
+          "org.nlogo" % "netlogo" % netLogoVersion.value % "test" intransitive() classifier "tests"))
+    }
+  }
 
   def directoryTarget(targetDirectory: File): Target =
     new DirectoryTarget(targetDirectory)
