@@ -51,6 +51,8 @@ object NetLogoExtension extends AutoPlugin {
     val netLogoPackageExtras = taskKey[Seq[(File, String)]]("extension-package-extras")
   }
 
+  lazy val netLogoAPIVersion = taskKey[String]("APIVersion of NetLogo associated with compilation target")
+
   import autoImport._
 
   val netLogoPackagedFiles = taskKey[Seq[(File, String)]]("extension-packaged-files")
@@ -69,6 +71,7 @@ object NetLogoExtension extends AutoPlugin {
         .filter(path =>
           path.getName.endsWith(".jar") &&
           !path.getName.startsWith("scala-library") &&
+          !path.getName.startsWith("NetLogo") &&
           !path.getName.startsWith("netlogo"))
         .map(path => (path, path.getName))
     },
@@ -79,11 +82,21 @@ object NetLogoExtension extends AutoPlugin {
       netLogoPackageExtras.value :+ ((artifactPath in packageBin in Compile).value -> s"${netLogoExtName.value}.jar")
     },
 
+    netLogoAPIVersion := {
+      val loader = sbt.classpath.ClasspathUtilities.makeLoader(
+        Attributed.data((dependencyClasspath in Compile).value),
+        scalaInstance.value)
+      loader
+        .loadClass("org.nlogo.api.APIVersion")
+        .getMethod("version")
+        .invoke(null).asInstanceOf[String]
+    },
+
     packageOptions +=
       Package.ManifestAttributes(
-        ("Extension-Name", netLogoExtName.value),
-        ("Class-Manager",  netLogoClassManager.value),
-        ("NetLogo-Extension-API-Version", "5.0")
+        ("Extension-Name",                netLogoExtName.value),
+        ("Class-Manager",                 netLogoClassManager.value),
+        ("NetLogo-Extension-API-Version", netLogoAPIVersion.value)
       ),
 
     packageBin in Compile := {
