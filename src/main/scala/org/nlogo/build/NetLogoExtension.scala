@@ -28,12 +28,16 @@ object NetLogoExtension extends AutoPlugin {
 
   class DirectoryTarget(baseDir: File) extends Target {
     override def producedFiles(fileMap: Seq[(File, String)]): Seq[File] =
-      fileMap.map(_._2).map(baseDir / _).filterNot(fileMap.contains)
+      fileMap.map(_._2).map(baseDir / _).filterNot(fileMap.contains) :+ baseDir / ".bundledFiles"
 
     override def create(sourceMap: Seq[(File, String)]): Unit = {
       val files = sourceMap.map {
         case (file, name) => (file, baseDir / name)
       }
+      IO.write(baseDir / ".bundledFiles",
+        sourceMap
+          .map { t => t._1.getAbsolutePath + "->" + t._2 }
+          .mkString("\n"))
       IO.copy(files, overwrite = true)
     }
   }

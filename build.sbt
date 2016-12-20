@@ -6,9 +6,9 @@ organization := "org.nlogo"
 
 name         := "netlogo-extension-plugin"
 
-version      := "3.0"
+version      := "3.1"
 
-isSnapshot   := true
+isSnapshot   := false
 
 licenses  += ("Public Domain", url("http://creativecommons.org/licenses/publicdomain/"))
 

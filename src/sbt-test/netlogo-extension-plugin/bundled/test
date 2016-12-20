@@ -1,6 +1,8 @@
 > package
 $ exists helloscala.jar
 $ exists commons-lang-2.6.jar
+$ exists .bundledFiles
 > clean
 $ absent helloscala.jar
 $ absent commons-lang-2.6.jar
+$ absent .bundledFiles
