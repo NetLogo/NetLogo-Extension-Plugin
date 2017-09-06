@@ -1,6 +1,6 @@
 sbtPlugin := true
 
-scalaVersion := "2.10.6"
+scalaVersion := "2.12.2"
 
 organization := "org.nlogo"
 
