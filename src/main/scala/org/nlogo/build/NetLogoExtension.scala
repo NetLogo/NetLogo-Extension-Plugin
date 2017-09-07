@@ -1,6 +1,10 @@
 package org.nlogo.build
 
-import sbt._, Keys._, plugins.JvmPlugin
+import sbt._, Keys._, plugins.JvmPlugin,
+  io.CopyOptions,
+  internal.inc.classpath.ClasspathUtilities
+
+import scala.sys.process.Process
 
 object NetLogoExtension extends AutoPlugin {
 
@@ -20,7 +24,7 @@ object NetLogoExtension extends AutoPlugin {
 
     private def sourcesToZip: Seq[(File, String)] =
       if (includeSources) {
-        val allFiles = Process(s"git ls-files", baseDir).lines_!.filterNot(_ == ".gitignore")
+        val allFiles = Process(s"git ls-files", baseDir).lineStream_!.filterNot(_ == ".gitignore")
         allFiles.map(new File(_)) zip allFiles
       } else
         Seq()
@@ -38,7 +42,7 @@ object NetLogoExtension extends AutoPlugin {
         sourceMap
           .map { t => t._1.getAbsolutePath + "->" + t._2 }
           .mkString("\n"))
-      IO.copy(files, overwrite = true)
+      IO.copy(files, CopyOptions().withOverwrite(true))
     }
   }
 
@@ -87,7 +91,7 @@ object NetLogoExtension extends AutoPlugin {
     },
 
     netLogoAPIVersion := {
-      val loader = sbt.classpath.ClasspathUtilities.makeLoader(
+      val loader = ClasspathUtilities.makeLoader(
         Attributed.data((dependencyClasspath in Compile).value),
         scalaInstance.value)
       loader
@@ -103,18 +107,22 @@ object NetLogoExtension extends AutoPlugin {
         ("NetLogo-Extension-API-Version", netLogoAPIVersion.value)
       ),
 
-    packageBin in Compile := {
+    packageBin in Compile := (Def.taskDyn {
         val jar = (packageBin in Compile).value
 
         if (isSnapshot.value || Process("git diff --quiet --exit-code HEAD", baseDirectory.value).! == 0) {
-          netLogoTarget.value.create(netLogoPackagedFiles.value)
+          Def.task {
+            netLogoTarget.value.create(netLogoPackagedFiles.value)
+            jar
+          }
         } else {
-          streams.value.log.warn("working tree not clean when packaging; target not created")
-          IO.delete(netLogoTarget.value.producedFiles(netLogoPackagedFiles.value))
+          Def.task {
+            streams.value.log.warn("working tree not clean when packaging; target not created")
+            IO.delete(netLogoTarget.value.producedFiles(netLogoPackagedFiles.value))
+            jar
+          }
         }
-
-        jar
-    },
+    }).value,
 
     clean := {
       val _ = clean.value
