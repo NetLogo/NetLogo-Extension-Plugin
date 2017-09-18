@@ -22,7 +22,7 @@ resolvers += Resolver.url(
     url("http://dl.bintray.com/content/netlogo/NetLogo-JVM"))(
         Resolver.ivyStylePatterns)
 
-addSbtPlugin("org.nlogo" % "netlogo-extension-plugin" % "3.0")
+addSbtPlugin("org.nlogo" % "netlogo-extension-plugin" % "3.2")
 ```
 
 `build.sbt`
@@ -30,7 +30,7 @@ addSbtPlugin("org.nlogo" % "netlogo-extension-plugin" % "3.0")
 ```scala
 enablePlugins(org.nlogo.build.NetLogoExtension)
 
-netLogoVersion      := "5.3.1"
+netLogoVersion      := "6.0.2"
 
 netLogoClassManager := "HelloScalaExtension"
 
