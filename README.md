@@ -2,7 +2,7 @@
 
 This plugin provides common build boilerplate for NetLogo 5.3.1 and later extensions. For versions before 5.3.1, please refer to [version 2.2_5.3](https://github.com/NetLogo/NetLogo-Extension-Plugin/tree/v2.2_5.3-M1)
 
-Currently, the plugin targets **SBT 0.13.**
+Currently, the plugin targets **SBT 1.x** (use v3.1 for SBT 0.13).
 
 ## Building
 
