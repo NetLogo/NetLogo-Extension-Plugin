@@ -4,14 +4,12 @@ scalaVersion := "2.12.2"
 
 organization := "org.nlogo"
 
-name         := "netlogo-extension-plugin"
+name := "netlogo-extension-plugin"
 
-version      := "3.2"
+version := "3.2"
 
-isSnapshot   := false
+isSnapshot := false
 
-licenses  += ("Public Domain", url("http://creativecommons.org/licenses/publicdomain/"))
+licenses += ("Creative Commons Zero v1.0 Universal Public Domain Dedication", url("https://creativecommons.org/publicdomain/zero/1.0/"))
 
-bintrayRepository   := "NetLogo-JVM"
-
-bintrayOrganization := Some("netlogo")
+publishTo := { Some("Cloudsmith API" at "https://maven.cloudsmith.io/netlogo/netlogo-extension-plugin/") }

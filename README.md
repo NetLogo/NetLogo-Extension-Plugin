@@ -17,10 +17,7 @@ For an example usage of this plugin, please see the [NetLogo extension activator
 `project/plugins.sbt`
 
 ```scala
-resolvers += Resolver.url(
-  "NetLogo-JVM",
-    url("http://dl.bintray.com/content/netlogo/NetLogo-JVM"))(
-        Resolver.ivyStylePatterns)
+resolvers += "netlogo-extension-plugin" at "https://dl.cloudsmith.io/public/netlogo/netlogo-extension-plugin/maven/"
 
 addSbtPlugin("org.nlogo" % "netlogo-extension-plugin" % "3.2")
 ```
@@ -53,3 +50,7 @@ netLogoTarget := org.nlogo.build.NetLogoExtension.directoryTarget(baseDirectory.
 [![CC0](http://i.creativecommons.org/p/zero/1.0/88x31.png)](http://creativecommons.org/publicdomain/zero/1.0/)
 
 The NetLogo Extension plugin is in the public domain.  To the extent possible under law, Uri Wilensky has waived all copyright and related or neighboring rights.
+
+[![Hosted By: Cloudsmith](https://img.shields.io/badge/OSS%20hosting%20by-cloudsmith-blue?logo=cloudsmith&style=flat-square)](https://cloudsmith.com)
+
+Package repository hosting is graciously provided by [Cloudsmith](https://cloudsmith.com).
