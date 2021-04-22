@@ -17,7 +17,7 @@ name := "Hello-Extension"
 
 libraryDependencies ++= Seq("commons-lang" % "commons-lang" % "2.6")
 
-netLogoVersion      := "6.0-M1"
+netLogoVersion      := "6.2.0"
 
 netLogoClassManager := "HelloScalaExtension"
 

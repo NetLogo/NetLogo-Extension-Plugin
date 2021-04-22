@@ -13,7 +13,7 @@ javacOptions ++= Seq("-g", "-deprecation", "-Xlint:all", "-encoding", "us-ascii"
 
 name := "Hello-Extension"
 
-netLogoVersion      := "6.0-M1"
+netLogoVersion      := "6.2.0"
 
 netLogoClassManager := "HelloScalaExtension"
 

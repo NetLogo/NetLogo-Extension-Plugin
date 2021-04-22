@@ -157,10 +157,12 @@ object NetLogoExtension extends AutoPlugin {
 
     (netLogoJarFile orElse netLogoJarURL).getOrElse {
       Seq(
-        resolvers += Resolver.bintrayRepo("content/netlogo", "NetLogo-JVM"),
-        libraryDependencies ++= Seq(
-          "org.nlogo" % "netlogo" % netLogoVersion.value intransitive,
-          "org.nlogo" % "netlogo" % netLogoVersion.value % "test" intransitive() classifier "tests"))
+        resolvers += "netlogo" at "https://dl.cloudsmith.io/public/netlogo/netlogo/maven/"
+      , libraryDependencies ++= Seq(
+          "org.nlogo" % "netlogo" % netLogoVersion.value intransitive
+        , "org.nlogo" % "netlogo" % netLogoVersion.value % "test" intransitive() classifier "tests"
+        )
+      )
     }
   }
 

@@ -6,7 +6,7 @@ organization := "org.nlogo"
 
 name := "netlogo-extension-plugin"
 
-version := "3.2"
+version := "4.0"
 
 isSnapshot := false
 

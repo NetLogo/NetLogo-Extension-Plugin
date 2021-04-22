@@ -19,7 +19,7 @@ For an example usage of this plugin, please see the [NetLogo extension activator
 ```scala
 resolvers += "netlogo-extension-plugin" at "https://dl.cloudsmith.io/public/netlogo/netlogo-extension-plugin/maven/"
 
-addSbtPlugin("org.nlogo" % "netlogo-extension-plugin" % "3.2")
+addSbtPlugin("org.nlogo" % "netlogo-extension-plugin" % "4.0")
 ```
 
 `build.sbt`
@@ -27,7 +27,7 @@ addSbtPlugin("org.nlogo" % "netlogo-extension-plugin" % "3.2")
 ```scala
 enablePlugins(org.nlogo.build.NetLogoExtension)
 
-netLogoVersion      := "6.0.2"
+netLogoVersion      := "6.2.0"
 
 netLogoClassManager := "HelloScalaExtension"
 
