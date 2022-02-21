@@ -2,6 +2,10 @@
 $ exists helloscala.jar
 $ exists commons-lang-2.6.jar
 $ exists .bundledFiles
+$ absent netlogo-6.2.2-tests.jar
+$ absent netlogo-6.2.2.jar
+$ absent jogl-all.jar
+$ absent gluegen-rt.jar
 > clean
 $ absent helloscala.jar
 $ absent commons-lang-2.6.jar
