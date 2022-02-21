@@ -1,6 +1,4 @@
 import org.nlogo.api._
-import org.nlogo.api.Syntax._
-import org.nlogo.api.ScalaConversions._
 
 class HelloScalaExtension extends DefaultClassManager {
   def load(manager: PrimitiveManager) {

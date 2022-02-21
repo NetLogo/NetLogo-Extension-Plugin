@@ -1,7 +1,5 @@
-import org.nlogo.core.Syntax
-import org.nlogo.core.Syntax._
+import org.nlogo.core.Syntax.{ reporterSyntax, StringType }
 import org.nlogo.api.{ Argument, Context, DefaultClassManager, ExtensionException, LogoException, PrimitiveManager, Reporter }
-import org.nlogo.api.ScalaConversions._
 
 class HelloScalaExtension extends DefaultClassManager {
   def load(manager: PrimitiveManager) {

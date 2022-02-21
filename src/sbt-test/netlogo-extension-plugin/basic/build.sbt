@@ -1,6 +1,6 @@
 enablePlugins(org.nlogo.build.NetLogoExtension)
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.12.3"
 
 scalaSource in Compile := { baseDirectory.value  / "src" }
 
@@ -13,7 +13,7 @@ javacOptions ++= Seq("-g", "-deprecation", "-Xlint:all", "-encoding", "us-ascii"
 
 name := "Hello-Extension"
 
-netLogoVersion      := "6.2.0"
+netLogoVersion      := "6.2.2"
 
 netLogoClassManager := "HelloScalaExtension"
 
