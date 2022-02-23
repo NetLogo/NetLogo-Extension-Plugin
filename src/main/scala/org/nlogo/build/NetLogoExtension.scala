@@ -118,15 +118,23 @@ object NetLogoExtension extends AutoPlugin {
   }
 
   def getExtensionDependencies(projectIDs: Set[ModuleID], netLogoDependencies: Seq[ModuleID], report: UpdateReport): Seq[File] = {
-    val miniProjectIDs         = projectIDs.map(miniturizeModule).toSet
-    val compileConfiguration   = report.configurations.filter(_.configuration.name == "compile").headOption.getOrElse(throw new Exception("No compile configuration in the project?"))
-    val modules                = compileConfiguration.modules.map( (m) => CalledModule(miniturizeModule(m.module), m.callers.map( (c) => miniturizeModule(c.caller) ).toSet) )
-    println(s"modules: $modules")
+    val miniProjectIDs       = projectIDs.map(miniturizeModule).toSet
+    val compileConfiguration = report.configurations.filter(_.configuration.name == "compile").headOption.getOrElse(throw new Exception("No compile configuration in the project?"))
+    val miniNetLogoDeps      = netLogoDependencies.map(miniturizeModule).toSet
+    val modules              = compileConfiguration.modules.map( (m) => {
+      val module  = miniturizeModule(m.module)
+      // It's possible some other lib has called the NetLogo dependencies, directly or transitively.
+      // just ignore that since we always consider the NetLogo deps to be "root".  -Jeremy B
+      val callers = if (miniNetLogoDeps.contains(module)) { Set[MiniModule]() } else {
+        m.callers.map( (c) => miniturizeModule(c.caller) ).toSet
+      }
+      CalledModule(module, callers)
+    })
     val rootsMap               = createRootsMap(miniProjectIDs, modules)
-    println(s"rootsMap: $rootsMap")
-    val miniNetLogoDeps        = netLogoDependencies.map(miniturizeModule).toSet
-    println(s"miniNetLogoDeps: $miniNetLogoDeps")
     val extensionModuleReports = compileConfiguration.modules.filter( (m) => !isNetLogoDependency(miniNetLogoDeps, rootsMap, miniturizeModule(m.module)) )
+    println(s"modules: $modules")
+    println(s"rootsMap: $rootsMap")
+    println(s"miniNetLogoDeps: $miniNetLogoDeps")
     extensionModuleReports.flatMap( (moduleReport) =>
       moduleReport.artifacts.find(_._1.`type` == "jar").orElse(moduleReport.artifacts.find(_._1.extension == "jar")).map(_._2)
     )
