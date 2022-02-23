@@ -121,8 +121,11 @@ object NetLogoExtension extends AutoPlugin {
     val miniProjectIDs         = projectIDs.map(miniturizeModule).toSet
     val compileConfiguration   = report.configurations.filter(_.configuration.name == "compile").headOption.getOrElse(throw new Exception("No compile configuration in the project?"))
     val modules                = compileConfiguration.modules.map( (m) => CalledModule(miniturizeModule(m.module), m.callers.map( (c) => miniturizeModule(c.caller) ).toSet) )
+    println(s"modules: $modules")
     val rootsMap               = createRootsMap(miniProjectIDs, modules)
+    println(s"rootsMap: $rootsMap")
     val miniNetLogoDeps        = netLogoDependencies.map(miniturizeModule).toSet
+    println(s"miniNetLogoDeps: $miniNetLogoDeps")
     val extensionModuleReports = compileConfiguration.modules.filter( (m) => !isNetLogoDependency(miniNetLogoDeps, rootsMap, miniturizeModule(m.module)) )
     extensionModuleReports.flatMap( (moduleReport) =>
       moduleReport.artifacts.find(_._1.`type` == "jar").orElse(moduleReport.artifacts.find(_._1.extension == "jar")).map(_._2)
