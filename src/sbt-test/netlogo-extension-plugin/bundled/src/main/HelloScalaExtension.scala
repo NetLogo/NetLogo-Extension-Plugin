@@ -1,3 +1,5 @@
+package org.nlogo.extensions.helloscala
+
 import org.nlogo.core.Syntax.{ reporterSyntax, StringType }
 import org.nlogo.api.{ Argument, Context, DefaultClassManager, ExtensionException, LogoException, PrimitiveManager, Reporter }
 

@@ -1,0 +1,9 @@
+RunMyTest
+  extensions [helloscala]
+  helloscala:hello "Jerry" => "hello, Jerry"
+
+IncludeMeTest1
+  file-exists? "include_me_1.txt" => true
+  O> file-open "include_me_1.txt"
+  file-at-end? => false
+  file-read-line => "Include me 1 contents!"

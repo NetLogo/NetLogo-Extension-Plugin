@@ -2,9 +2,11 @@ package org.nlogo.build
 
 import java.io.File
 
-import sbt._, Keys._, plugins.JvmPlugin,
-  io.CopyOptions,
-  internal.inc.classpath.ClasspathUtilities
+import sbt._
+import sbt.Keys._
+import sbt.io.{ CopyOptions }
+import sbt.plugins.JvmPlugin
+import sbt.internal.inc.classpath.ClasspathUtilities
 
 import sbt.librarymanagement.{ ModuleID, OrganizationArtifactReport, UpdateReport }
 import sbt.io.NameFilter
@@ -61,18 +63,22 @@ object NetLogoExtension extends AutoPlugin {
     val netLogoClassManager  = settingKey[String]("extension-class-manager")
     val netLogoZipSources    = settingKey[Boolean]("extension-zip-sources")
     val netLogoTarget        = settingKey[Target]("extension-target")
-    val netLogoPackageExtras = taskKey[Seq[(File, String)]]("extension-package-extras")
+    val netLogoPackageExtras = settingKey[Seq[(File, Option[String])]]("extension-package-extras")
   }
 
-  lazy val netLogoAPIVersion = taskKey[String]("APIVersion of NetLogo associated with compilation target")
-
+  lazy val netLogoAPIVersion   = taskKey[String]("APIVersion of NetLogo associated with compilation target")
   lazy val netLogoDependencies = settingKey[Seq[ModuleID]]("NetLogo libraries and dependencies")
-
-  lazy val crossProjectID = settingKey[ModuleID]("The cross-project ModuleID version of the projectID setting")
+  lazy val crossProjectID      = settingKey[ModuleID]("The cross-project ModuleID version of the projectID setting")
+  lazy val extensionTestTarget = settingKey[Target]("extension-test-target")
 
   import autoImport._
 
   val netLogoPackagedFiles = taskKey[Seq[(File, String)]]("extension-packaged-files")
+
+  lazy val netLogoTestDirectory = settingKey[File]("directory that extension is moved to for testing")
+
+  def directoryTarget(targetDirectory: File): Target =
+    new DirectoryTarget(targetDirectory)
 
   // for our simple purposes we only need the organization and name to determine module equality
   // so we use cases class to handle that for us.   -Jeremy B February 2022
@@ -123,18 +129,18 @@ object NetLogoExtension extends AutoPlugin {
     val miniNetLogoDeps      = netLogoDependencies.map(miniturizeModule).toSet
     val modules              = compileConfiguration.modules.map( (m) => {
       val module  = miniturizeModule(m.module)
-      // It's possible some other lib has called the NetLogo dependencies, directly or transitively.
-      // just ignore that since we always consider the NetLogo deps to be "root".  -Jeremy B
-      val callers = if (miniNetLogoDeps.contains(module)) { Set[MiniModule]() } else {
+      // It's possible some other lib directly used by the extension has called for the NetLogo
+      // dependencies, directly or transitively. just ignore that since we always consider
+      // the NetLogo deps to be "root".  -Jeremy B
+      val callers = if (miniNetLogoDeps.contains(module)) {
+        Set[MiniModule]()
+      } else {
         m.callers.map( (c) => miniturizeModule(c.caller) ).toSet
       }
       CalledModule(module, callers)
     })
     val rootsMap               = createRootsMap(miniProjectIDs, modules)
     val extensionModuleReports = compileConfiguration.modules.filter( (m) => !isNetLogoDependency(miniNetLogoDeps, rootsMap, miniturizeModule(m.module)) )
-    println(s"modules: $modules")
-    println(s"rootsMap: $rootsMap")
-    println(s"miniNetLogoDeps: $miniNetLogoDeps")
     extensionModuleReports.flatMap( (moduleReport) =>
       moduleReport.artifacts.find(_._1.`type` == "jar").orElse(moduleReport.artifacts.find(_._1.extension == "jar")).map(_._2)
     )
@@ -142,30 +148,27 @@ object NetLogoExtension extends AutoPlugin {
 
   override lazy val projectSettings = Seq(
 
-    netLogoExtName := name.value,
-
-    netLogoTarget :=
-      new ZipTarget(netLogoExtName.value, baseDirectory.value, netLogoZipSources.value),
-
-    netLogoZipSources := true,
-
-    netLogoPackageExtras := getExtensionDependencies(Set(projectID.value, crossProjectID.value), netLogoDependencies.value, (Compile / updateFull).value).map( (d) => (d, d.getName) ),
-
-    artifactName := ((_, _, _) => s"${netLogoExtName.value}.jar"),
+    netLogoExtName       := name.value,
+    netLogoTarget        := new ZipTarget(netLogoExtName.value, baseDirectory.value, netLogoZipSources.value),
+    netLogoZipSources    := true,
+    netLogoPackageExtras := Seq(),
 
     netLogoPackagedFiles := {
-      netLogoPackageExtras.value :+ ((artifactPath in packageBin in Compile).value -> s"${netLogoExtName.value}.jar")
+      val dependencies = getExtensionDependencies(Set(projectID.value, crossProjectID.value), netLogoDependencies.value, (Compile / updateFull).value).map( (d) => (d, d.getName) )
+      val extras       = netLogoPackageExtras.value.map({ case (extraFile, maybeRename) => (extraFile, maybeRename.getOrElse(extraFile.getName)) })
+      val extensionJar = (Compile / packageBin / artifactPath).value
+      dependencies ++ extras :+ (extensionJar -> s"${netLogoExtName.value}.jar")
     },
 
     netLogoAPIVersion := {
-      val loader = ClasspathUtilities.makeLoader(
-        Attributed.data((dependencyClasspath in Compile).value),
-        scalaInstance.value)
+      val loader = ClasspathUtilities.makeLoader(Attributed.data((Compile / dependencyClasspath).value), scalaInstance.value)
       loader
         .loadClass("org.nlogo.api.APIVersion")
         .getMethod("version")
         .invoke(null).asInstanceOf[String]
     },
+
+    extensionTestTarget := NetLogoExtension.directoryTarget(baseDirectory.value / "extensions" / netLogoExtName.value),
 
     packageOptions +=
       Package.ManifestAttributes(
@@ -174,21 +177,21 @@ object NetLogoExtension extends AutoPlugin {
         ("NetLogo-Extension-API-Version", netLogoAPIVersion.value)
       ),
 
-    packageBin in Compile := (Def.taskDyn {
-        val jar = (packageBin in Compile).value
+    (Compile / packageBin) := (Def.taskDyn {
+      val jar = (Compile / packageBin).value
 
-        if (isSnapshot.value || Process("git diff --quiet --exit-code HEAD", baseDirectory.value).! == 0) {
-          Def.task {
-            netLogoTarget.value.create(netLogoPackagedFiles.value)
-            jar
-          }
-        } else {
-          Def.task {
-            streams.value.log.warn("working tree not clean when packaging; target not created")
-            IO.delete(netLogoTarget.value.producedFiles(netLogoPackagedFiles.value))
-            jar
-          }
+      if (isSnapshot.value || Process("git diff --quiet --exit-code HEAD", baseDirectory.value).! == 0) {
+        Def.task {
+          netLogoTarget.value.create(netLogoPackagedFiles.value)
+          jar
         }
+      } else {
+        Def.task {
+          streams.value.log.warn("working tree not clean when packaging; target not created")
+          IO.delete(netLogoTarget.value.producedFiles(netLogoPackagedFiles.value))
+          jar
+        }
+      }
     }).value,
 
     clean := {
@@ -208,11 +211,24 @@ object NetLogoExtension extends AutoPlugin {
 
     libraryDependencies ++= netLogoDependencies.value,
 
-    crossProjectID := CrossVersion(scalaVersion.value, scalaBinaryVersion.value)(projectID.value)
+    exportJars := true,
+
+    crossProjectID := CrossVersion(scalaVersion.value, scalaBinaryVersion.value)(projectID.value),
+
+    (Test / testOptions) ++= Seq(
+
+      Tests.Setup( () => {
+        (Compile / packageBin).value: @sbtUnchecked
+        val files = netLogoPackagedFiles.value: @sbtUnchecked
+        extensionTestTarget.value.create(files)
+      }),
+
+      Tests.Cleanup( () => {
+        val files = netLogoPackagedFiles.value: @sbtUnchecked
+        IO.delete(extensionTestTarget.value.producedFiles(files))
+      })
+
+    )
 
   )
-
-  def directoryTarget(targetDirectory: File): Target =
-    new DirectoryTarget(targetDirectory)
-
 }
