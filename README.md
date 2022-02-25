@@ -27,12 +27,9 @@ addSbtPlugin("org.nlogo" % "netlogo-extension-plugin" % "4.0")
 ```scala
 enablePlugins(org.nlogo.build.NetLogoExtension)
 
-netLogoVersion      := "6.2.0"
-
+netLogoVersion      := "6.2.2"
 netLogoClassManager := "HelloScalaExtension"
-
 netLogoExtName      := "helloscala"
-
 netLogoZipSources   := false
 ```
 
@@ -43,6 +40,45 @@ If you would like it to extract the sbt base directory instead, you can use:
 
 ```scala
 netLogoTarget := org.nlogo.build.NetLogoExtension.directoryTarget(baseDirectory.value)
+```
+
+### Including Extra0 Files in Packaging and Tests
+
+You can use the `netLogoPackageExtras` setting to add files to the packaging and testing of your
+extension.  The setting is a sequence of tuples, the first value being a file path and the second
+being an `Option[String]` to rename the file when it's copied (`None` will use the same file name).
+Example:
+
+```scala
+netLogoPackageExtras += (baseDirectory.value / "resources" / "include_me_1.txt", None)
+```
+
+### Language Tests
+
+You can easily run headless NetLogo language tests for your extension.  These are described
+in [the NetLogo wiki](https://github.com/NetLogo/NetLogo/wiki/Language-tests).  These tests let you write NetLogo code snippets to test your extension without manually running the NetLogo GUI.
+
+In order to setup the language tests, add a class to your tests folder that extends `org.nlogo.headless.TestLanguage`, passing in your test files to its constructor.  Then make sure your test class is referenced in your `build.sbt` file, `Test / scalaSource` for Scala or `Test / javaSource` for Java.  Note that this plugin automatically adds the necessary ScalaTest library to run the tests to your extension project, and sbt will find the ScalaTest test runner when you use the `sbt test` command.
+
+Below is an example from one of the sample packages used to verify this plugin, and here is an example from the Python extension.  Setting the `org.nlogo.preferHeadless` property isn't required, but it
+may help if your extension works with GUI code, like creating menus or dialogs.
+
+```scala
+package org.nlogo.extensions.helloscala
+
+import java.io.File
+import org.nlogo.headless.TestLanguage
+
+object Tests {
+  // file paths are relative to the repository root
+  // this example assumes a single `tests.txt` file
+  val testFileNames = Seq("tests.txt")
+  val testFiles     = testFileNames.map( (f) => (new File(f)).getCanonicalFile )
+}
+
+class Tests extends TestLanguage(Tests.testFiles) {
+  System.setProperty("org.nlogo.preferHeadless", "true")
+}
 ```
 
 ## Terms of Use

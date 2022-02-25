@@ -1,9 +1,15 @@
 package org.nlogo.extensions.helloscala
 
+import java.io.File
 import org.nlogo.headless.TestLanguage
 
-class Tests extends TestLanguage(Seq(new java.io.File("tests.txt").getCanonicalFile)) {
-  println(java.nio.file.Paths.get("").toAbsolutePath().toString())
-  println(System.getProperty("user.home"))
+object Tests {
+  // file paths are relative to the repository root
+  // this example assumes a single `tests.txt` file
+  val testFileNames = Seq("tests.txt")
+  val testFiles     = testFileNames.map( (f) => (new File(f)).getCanonicalFile )
+}
+
+class Tests extends TestLanguage(Tests.testFiles) {
   System.setProperty("org.nlogo.preferHeadless", "true")
 }
