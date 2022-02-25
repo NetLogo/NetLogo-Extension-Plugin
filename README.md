@@ -2,11 +2,7 @@
 
 This plugin provides common build boilerplate for NetLogo 5.3.1 and later extensions. For versions before 5.3.1, please refer to [version 2.2_5.3](https://github.com/NetLogo/NetLogo-Extension-Plugin/tree/v2.2_5.3-M1)
 
-Currently, the plugin targets **SBT 1.x** (use v3.1 for SBT 0.13).
-
-## Building
-
-Simply run the `package` SBT command to build a new version of the plugin `.jar`.  Then, set your SBT project's `plugins.sbt` to reference/fetch the `.jar`.
+Currently, the plugin targets **SBT 1.3.13** (use v3.1 for SBT 0.13).
 
 ## Usage
 
@@ -42,7 +38,7 @@ If you would like it to extract the sbt base directory instead, you can use:
 netLogoTarget := org.nlogo.build.NetLogoExtension.directoryTarget(baseDirectory.value)
 ```
 
-### Including Extra0 Files in Packaging and Tests
+### Including Extra Files in Packaging and Tests
 
 You can use the `netLogoPackageExtras` setting to add files to the packaging and testing of your
 extension.  The setting is a sequence of tuples, the first value being a file path and the second
@@ -80,6 +76,12 @@ class Tests extends TestLanguage(Tests.testFiles) {
   System.setProperty("org.nlogo.preferHeadless", "true")
 }
 ```
+
+## Building
+
+Simply run the `package` SBT command to build a new version of the plugin `.jar`.  Then, set your SBT project's `plugins.sbt` to reference/fetch the `.jar`.
+
+Run `sbt scripted` to run the sample test projects from `src/sbt-test/netlogo-extension-plugin`.
 
 ## Terms of Use
 

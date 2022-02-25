@@ -5,9 +5,9 @@ enablePlugins(NetLogoExtension)
 version    := "0.0.1"
 isSnapshot := true
 
-scalaVersion           := "2.12.12"
-scalaSource in Compile := { baseDirectory.value / "src" / "main" }
-scalaSource in Test    := { baseDirectory.value / "src" / "test" }
+scalaVersion            := "2.12.12"
+(Compile / scalaSource) := { baseDirectory.value / "src" / "main" }
+(Test / scalaSource)    := { baseDirectory.value / "src" / "test" }
 scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xlint", "-Xfatal-warnings", "-encoding", "us-ascii")
 
 name := "Hello-Extension"
