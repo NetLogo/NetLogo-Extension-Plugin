@@ -1,6 +1,6 @@
 # NetLogo Extension Plugin
 
-This plugin provides common build boilerplate for NetLogo 5.3.1 and later extensions. For versions before 5.3.1, please refer to [version 2.2_5.3](https://github.com/NetLogo/NetLogo-Extension-Plugin/tree/v2.2_5.3-M1)
+This plugin provides common build boilerplate for NetLogo 6 and 5.3.1 extensions. For versions before 5.3.1, please refer to [version 2.2_5.3](https://github.com/NetLogo/NetLogo-Extension-Plugin/tree/v2.2_5.3-M1)
 
 Currently, the plugin targets **SBT 1.3.13** (use v3.1 for SBT 0.13).
 
@@ -15,7 +15,7 @@ For an example usage of this plugin, please see the [NetLogo extension activator
 ```scala
 resolvers += "netlogo-extension-plugin" at "https://dl.cloudsmith.io/public/netlogo/netlogo-extension-plugin/maven/"
 
-addSbtPlugin("org.nlogo" % "netlogo-extension-plugin" % "4.0")
+addSbtPlugin("org.nlogo" % "netlogo-extension-plugin" % "5.0")
 ```
 
 `build.sbt`
@@ -56,8 +56,7 @@ in [the NetLogo wiki](https://github.com/NetLogo/NetLogo/wiki/Language-tests).  
 
 In order to setup the language tests, add a class to your tests folder that extends `org.nlogo.headless.TestLanguage`, passing in your test files to its constructor.  Then make sure your test class is referenced in your `build.sbt` file, `Test / scalaSource` for Scala or `Test / javaSource` for Java.  Note that this plugin automatically adds the necessary ScalaTest library to run the tests to your extension project, and sbt will find the ScalaTest test runner when you use the `sbt test` command.
 
-Below is an example from one of the sample packages used to verify this plugin, and here is an example from the Python extension.  Setting the `org.nlogo.preferHeadless` property isn't required, but it
-may help if your extension works with GUI code, like creating menus or dialogs.
+Below is an example from one of the sample packages used to verify this plugin, and [here is an example from the Python extension](https://github.com/NetLogo/Python-Extension/blob/master/src/test/Tests.scala) along with its [`build.sbt` settings](https://github.com/NetLogo/Python-Extension/blob/master/build.sbt).  Setting the `org.nlogo.preferHeadless` property isn't required, but it may help if your extension works with GUI code, like creating menus or dialogs.
 
 ```scala
 package org.nlogo.extensions.helloscala
