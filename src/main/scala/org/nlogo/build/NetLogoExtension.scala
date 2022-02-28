@@ -229,7 +229,6 @@ object NetLogoExtension extends AutoPlugin {
 
         def copyTestFile(file: File): Unit = {
           val testFile = (extensionTestDirectory.value / IO.relativize(baseDirectory.value, file).get)
-          println(s"copying $file to $testFile")
           IO.copyFile(file, testFile)
         }
 
