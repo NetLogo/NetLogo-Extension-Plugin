@@ -12,3 +12,7 @@ $ absent helloscala.jar
 $ absent commons-lang-2.6.jar
 $ absent .bundledFiles
 $ absent extensions/helloscala/helloscala.jar
+$ absent extensions/helloscala/test-docs/test_me_1.txt
+$ absent extensions/helloscala/test_me_2.txt
+$ absent extensions/helloscala/test-docs/sub1/test_me_3.txt
+$ absent extensions/helloscala

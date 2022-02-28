@@ -7,3 +7,19 @@ IncludeMeTest1
   O> file-open "include_me_1.txt"
   file-at-end? => false
   file-read-line => "Include me 1 contents!"
+
+TestMeTest1
+  file-exists? "test-docs/test_me_1.txt" => true
+  O> file-open "test-docs/test_me_1.txt"
+  file-at-end? => false
+  file-read-line => "Test me 1 contents!"
+  O> file-close
+  file-exists? "test_me_2.txt" => true
+  O> file-open "test_me_2.txt"
+  file-at-end? => false
+  file-read-line => "Test me 2 contents!"
+  O> file-close
+  file-exists? "test-docs/sub1/test_me_3.txt" => true
+  O> file-open "test-docs/sub1/test_me_3.txt"
+  file-at-end? => false
+  file-read-line => "Test me 3 contents!"

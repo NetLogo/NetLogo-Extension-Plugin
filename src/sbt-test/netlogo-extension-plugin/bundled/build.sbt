@@ -14,9 +14,10 @@ name := "Hello-Extension"
 
 libraryDependencies ++= Seq("commons-lang" % "commons-lang" % "2.6")
 
-netLogoVersion       := "6.2.2"
-netLogoClassManager  := "org.nlogo.extensions.helloscala.HelloScalaExtension"
-netLogoExtName       := "helloscala"
-netLogoZipSources    := false
-netLogoTarget        := NetLogoExtension.directoryTarget(baseDirectory.value)
-netLogoPackageExtras += (baseDirectory.value / "resources" / "include_me_1.txt", None)
+netLogoVersion       :=  "6.2.2"
+netLogoClassManager  :=  "org.nlogo.extensions.helloscala.HelloScalaExtension"
+netLogoExtName       :=  "helloscala"
+netLogoZipSources    :=  false
+netLogoTarget        :=  NetLogoExtension.directoryTarget(baseDirectory.value)
+netLogoPackageExtras +=  (baseDirectory.value / "resources" / "include_me_1.txt", None)
+netLogoTestExtras    ++= Seq(baseDirectory.value / "test-docs", baseDirectory.value / "test_me_2.txt")

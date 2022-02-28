@@ -64,12 +64,14 @@ object NetLogoExtension extends AutoPlugin {
     val netLogoZipSources    = settingKey[Boolean]("extension-zip-sources")
     val netLogoTarget        = settingKey[Target]("extension-target")
     val netLogoPackageExtras = settingKey[Seq[(File, Option[String])]]("extension-package-extras")
+    val netLogoTestExtras    = settingKey[Seq[File]]("extension-test-extras")
   }
 
-  lazy val netLogoAPIVersion   = taskKey[String]("APIVersion of NetLogo associated with compilation target")
-  lazy val netLogoDependencies = settingKey[Seq[ModuleID]]("NetLogo libraries and dependencies")
-  lazy val crossProjectID      = settingKey[ModuleID]("The cross-project ModuleID version of the projectID setting")
-  lazy val extensionTestTarget = settingKey[Target]("extension-test-target")
+  lazy val netLogoAPIVersion      = taskKey[String]("APIVersion of NetLogo associated with compilation target")
+  lazy val netLogoDependencies    = settingKey[Seq[ModuleID]]("NetLogo libraries and dependencies")
+  lazy val crossProjectID         = settingKey[ModuleID]("The cross-project ModuleID version of the projectID setting")
+  lazy val extensionTestDirectory = settingKey[File]("extension-test-directory")
+  lazy val extensionTestTarget    = settingKey[Target]("extension-test-target")
 
   import autoImport._
 
@@ -152,6 +154,7 @@ object NetLogoExtension extends AutoPlugin {
     netLogoTarget        := new ZipTarget(netLogoExtName.value, baseDirectory.value, netLogoZipSources.value),
     netLogoZipSources    := true,
     netLogoPackageExtras := Seq(),
+    netLogoTestExtras    := Seq(),
 
     netLogoPackagedFiles := {
       val dependencies = getExtensionDependencies(Set(projectID.value, crossProjectID.value), netLogoDependencies.value, (Compile / updateFull).value).map( (d) => (d, d.getName) )
@@ -168,7 +171,8 @@ object NetLogoExtension extends AutoPlugin {
         .invoke(null).asInstanceOf[String]
     },
 
-    extensionTestTarget := NetLogoExtension.directoryTarget(baseDirectory.value / "extensions" / netLogoExtName.value),
+    extensionTestDirectory := baseDirectory.value / "extensions" / netLogoExtName.value,
+    extensionTestTarget    := NetLogoExtension.directoryTarget(extensionTestDirectory.value),
 
     packageOptions +=
       Package.ManifestAttributes(
@@ -221,11 +225,26 @@ object NetLogoExtension extends AutoPlugin {
         (Compile / packageBin).value: @sbtUnchecked
         val files = netLogoPackagedFiles.value: @sbtUnchecked
         extensionTestTarget.value.create(files)
+        val testFiles = netLogoTestExtras.value: @sbtUnchecked
+
+        def copyTestFile(file: File): Unit = {
+          val testFile = (extensionTestDirectory.value / IO.relativize(baseDirectory.value, file).get)
+          println(s"copying $file to $testFile")
+          IO.copyFile(file, testFile)
+        }
+
+        testFiles.foreach( (file) => {
+          if (file.isDirectory) {
+            file.allPaths.filter(!_.isDirectory).get.foreach(copyTestFile(_))
+          } else {
+            copyTestFile(file)
+          }
+        })
       }),
 
       Tests.Cleanup( () => {
         val files = netLogoPackagedFiles.value: @sbtUnchecked
-        IO.delete(extensionTestTarget.value.producedFiles(files))
+        IO.delete(extensionTestDirectory.value)
       })
 
     )
