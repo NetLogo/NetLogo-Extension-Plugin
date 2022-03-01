@@ -45,7 +45,11 @@ project be used by NetLogo if it's  copied or symbolically linked to the NetLogo
 
 The NetLogo Extension Plugin includes a `packageZip` sbt command that will take all the
 same fies included when you run the `package` command, along with some extras you can 
-specify with the `netLogoZipExtras` setting.
+specify with the `netLogoZipExtras` setting.  The name of the zip file will be 
+`netLogoExtName-version.zip` with `netLogoExtName` and `version` being pulled from your
+`build.sbt` settings file for sbt.  If you have your `version` set appropriately this
+should generate a file suitable for use in 
+[the NetLogo Extensions Library](https://github.com/NetLogo/NetLogo-Libraries).
 
 ### Including Extra Files in Build, Packaging, and Tests
 
