@@ -18,6 +18,15 @@ netLogoVersion       :=  "6.2.2"
 netLogoClassManager  :=  "org.nlogo.extensions.helloscala.HelloScalaExtension"
 netLogoExtName       :=  "helloscala"
 netLogoZipSources    :=  false
-netLogoTarget        :=  NetLogoExtension.directoryTarget(baseDirectory.value)
 netLogoPackageExtras +=  (baseDirectory.value / "resources" / "include_me_1.txt", None)
 netLogoTestExtras    ++= Seq(baseDirectory.value / "test-docs", baseDirectory.value / "test_me_2.txt")
+netLogoZipExtras     ++= Seq(baseDirectory.value / "test-docs", baseDirectory.value / "test_me_2.txt")
+
+// for testing the creation of the zip file
+val unzipPackage = taskKey[File]("unzip the created zip file for checking")
+unzipPackage := {
+  val zipFile = baseDirectory.value / s"${netLogoExtName.value}-${version.value}.zip"
+  val toDirectory = baseDirectory.value / s"${netLogoExtName.value}-${version.value}-unzipped"
+  IO.unzip(zipFile, toDirectory)
+  toDirectory
+}

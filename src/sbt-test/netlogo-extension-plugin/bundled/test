@@ -16,3 +16,11 @@ $ absent extensions/helloscala/test-docs/test_me_1.txt
 $ absent extensions/helloscala/test_me_2.txt
 $ absent extensions/helloscala/test-docs/sub1/test_me_3.txt
 $ absent extensions/helloscala
+> packageZip
+$ exists helloscala-0.0.1.zip
+> unzipPackage
+$ exists helloscala-0.0.1-unzipped/helloscala.jar
+$ exists helloscala-0.0.1-unzipped/commons-lang-2.6.jar
+$ exists helloscala-0.0.1-unzipped/test-docs/test_me_1.txt
+$ exists helloscala-0.0.1-unzipped/test_me_2.txt
+$ exists helloscala-0.0.1-unzipped/test-docs/sub1/test_me_3.txt

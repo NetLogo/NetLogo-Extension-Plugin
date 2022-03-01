@@ -65,6 +65,8 @@ object NetLogoExtension extends AutoPlugin {
     val netLogoTarget        = settingKey[Target]("extension-target")
     val netLogoPackageExtras = settingKey[Seq[(File, Option[String])]]("extension-package-extras")
     val netLogoTestExtras    = settingKey[Seq[File]]("extension-test-extras")
+    val netLogoZipExtras     = settingKey[Seq[File]]("extension-zip-extras")
+    val packageZip           = taskKey[File]("package to zip file for publishing via the extension manager")
   }
 
   lazy val netLogoAPIVersion      = taskKey[String]("APIVersion of NetLogo associated with compilation target")
@@ -148,13 +150,24 @@ object NetLogoExtension extends AutoPlugin {
     )
   }
 
+  def getAllFiles(files: Seq[File]): Seq[File] = {
+    files.flatMap( (file) => {
+      if (file.isDirectory) {
+        file.allPaths.filter(!_.isDirectory).get
+      } else {
+        Seq(file)
+      }
+    })
+  }
+
   override lazy val projectSettings = Seq(
 
     netLogoExtName       := name.value,
-    netLogoTarget        := new ZipTarget(netLogoExtName.value, baseDirectory.value, netLogoZipSources.value),
+    netLogoTarget        := NetLogoExtension.directoryTarget(baseDirectory.value),
     netLogoZipSources    := true,
     netLogoPackageExtras := Seq(),
     netLogoTestExtras    := Seq(),
+    netLogoZipExtras     := Seq(),
 
     netLogoPackagedFiles := {
       val dependencies = getExtensionDependencies(Set(projectID.value, crossProjectID.value), netLogoDependencies.value, (Compile / updateFull).value).map( (d) => (d, d.getName) )
@@ -169,6 +182,18 @@ object NetLogoExtension extends AutoPlugin {
         .loadClass("org.nlogo.api.APIVersion")
         .getMethod("version")
         .invoke(null).asInstanceOf[String]
+    },
+
+    packageZip := {
+      (Compile / packageBin).value
+      val netLogoFiles = netLogoPackagedFiles.value
+      val extraZipFiles = NetLogoExtension.getAllFiles(netLogoZipExtras.value).map( (file) => {
+        val newFile = IO.relativize(baseDirectory.value, file).get
+        (file, newFile)
+      })
+      val packageZipFile = baseDirectory.value / s"${netLogoExtName.value}-${version.value}.zip"
+      IO.zip(netLogoFiles ++ extraZipFiles, packageZipFile)
+      packageZipFile
     },
 
     extensionTestDirectory := baseDirectory.value / "extensions" / netLogoExtName.value,
@@ -225,20 +250,14 @@ object NetLogoExtension extends AutoPlugin {
         (Compile / packageBin).value: @sbtUnchecked
         val files = netLogoPackagedFiles.value: @sbtUnchecked
         extensionTestTarget.value.create(files)
-        val testFiles = netLogoTestExtras.value: @sbtUnchecked
 
         def copyTestFile(file: File): Unit = {
           val testFile = (extensionTestDirectory.value / IO.relativize(baseDirectory.value, file).get)
           IO.copyFile(file, testFile)
         }
 
-        testFiles.foreach( (file) => {
-          if (file.isDirectory) {
-            file.allPaths.filter(!_.isDirectory).get.foreach(copyTestFile(_))
-          } else {
-            copyTestFile(file)
-          }
-        })
+        val testFiles = NetLogoExtension.getAllFiles(netLogoTestExtras.value: @sbtUnchecked)
+        testFiles.foreach(copyTestFile(_))
       }),
 
       Tests.Cleanup( () => {

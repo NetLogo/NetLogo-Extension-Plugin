@@ -1,4 +1,4 @@
 > package
-$ exists helloscala.zip
+$ exists helloscala.jar
 > clean
-$ absent helloscala.zip
+$ absent helloscala.jar
