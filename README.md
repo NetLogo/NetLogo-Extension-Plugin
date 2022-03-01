@@ -35,9 +35,17 @@ netLogoZipSources   := false
 ### Building to Base Directory
 
 By default, the NetLogo Extension Plugin builds the jar files for the project and
-copies them and any dependencies into the root of the project repository.  This lets
-the project be used by NetLogo if it's copied or symbolically linked to the NetLogo
-`extensions` folder.
+copies them and any dependencies into the root of the project repository when you
+run the `package` sbt command.  The extension will also copy any files you specify 
+using the `netLogoPackageExtras` setting in your `build.sbt` file.  This lets the 
+project be used by NetLogo if it's  copied or symbolically linked to the NetLogo 
+`extensions` folder.  
+
+### Zip Package
+
+The NetLogo Extension Plugin includes a `packageZip` sbt command that will take all the
+same fies included when you run the `package` command, along with some extras you can 
+specify with the `netLogoZipExtras` setting.
 
 ### Including Extra Files in Build, Packaging, and Tests
 
@@ -46,8 +54,6 @@ extension.  The setting is a sequence of tuples, the first value being a file pa
 being an `Option[String]` to rename the file when it's copied (`None` will use the same file name).
 This is especially useful to copy files needed for execution that are not managed by sbt or included
 as Java resources, such as external scripts.
-
-Example:
 
 ```scala
 netLogoPackageExtras += (baseDirectory.value / "resources" / "include_me_1.txt", None)
