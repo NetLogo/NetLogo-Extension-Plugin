@@ -6,7 +6,10 @@ Currently, the plugin targets **SBT 1.3.13** (use v3.1 for SBT 0.13).
 
 ## Usage
 
-For an example usage of this plugin, please see the [NetLogo extension activator template](https://github.com/NetLogo/netlogo-extension-activator)'s [`plugins.sbt`](https://github.com/NetLogo/netlogo-extension-activator/blob/master/project/plugins.sbt) and [`build.sbt`](https://github.com/NetLogo/netlogo-extension-activator/blob/master/build.sbt).
+For an example usage of this plugin, please see the [Sample Scala Extension](https://github.com/NetLogo/Sample-Scala-Extension)'s [`plugins.sbt`](https://github.com/NetLogo/Sample-Scala-Extension/blob/hexy/project/plugins.sbt) and [`build.sbt`](https://github.com/NetLogo/Sample-Scala-Extension/blob/hexy/build.sbt).
+
+Note especially the use of the language test abilities to run the `tests.txt` file, and the sample models included with
+the `packageZip` command with the `netLogoZipExtras` setting.
 
 ### Project Files
 
@@ -31,22 +34,41 @@ netLogoZipSources   := false
 
 ### Building to Base Directory
 
-By default, the NetLogo Extension Plugin builds a zip file containing all artifacts.
-If you would like it to extract the sbt base directory instead, you can use:
+By default, the NetLogo Extension Plugin builds the jar files for the project and
+copies them and any dependencies into the root of the project repository.  This lets
+the project be used by NetLogo if it's copied or symbolically linked to the NetLogo
+`extensions` folder.
 
-```scala
-netLogoTarget := org.nlogo.build.NetLogoExtension.directoryTarget(baseDirectory.value)
-```
-
-### Including Extra Files in Packaging and Tests
+### Including Extra Files in Build, Packaging, and Tests
 
 You can use the `netLogoPackageExtras` setting to add files to the packaging and testing of your
 extension.  The setting is a sequence of tuples, the first value being a file path and the second
 being an `Option[String]` to rename the file when it's copied (`None` will use the same file name).
+This is especially useful to copy files needed for execution that are not managed by sbt or included
+as Java resources, such as external scripts.
+
 Example:
 
 ```scala
 netLogoPackageExtras += (baseDirectory.value / "resources" / "include_me_1.txt", None)
+```
+
+And if you have items that are just for testing, you can use the `netLogoTestExtras` setting.  Any files
+included in the list are copied, and folders are recursively copied, maintaining their directory structure.
+
+```scala
+// everything in `test/` directory will be copied to the language test directory when
+// the tests are run.
+netLogoTestExtras += (baseDirectory.value / "test")
+```
+
+And you can include extra files in the `packageZip` command using the `netLogoZipExtras` setting.  This is
+useful when you're including extra docs or example models with the zip file.
+
+```scala
+// The `README.md` file and everything in `sample_models/` directory will be included in the zip file
+// made with the `packageZip` command
+netLogoZipExtras ++= Seq(baseDirectory.value / "sample_models", baseDirectory.value / "README.md")
 ```
 
 ### Language Tests
