@@ -18,7 +18,7 @@ the `packageZip` command with the `netLogoZipExtras` setting.
 ```scala
 resolvers += "netlogo-extension-plugin" at "https://dl.cloudsmith.io/public/netlogo/netlogo-extension-plugin/maven/"
 
-addSbtPlugin("org.nlogo" % "netlogo-extension-plugin" % "5.0")
+addSbtPlugin("org.nlogo" % "netlogo-extension-plugin" % "5.2.0")
 ```
 
 `build.sbt`
@@ -36,20 +36,38 @@ netLogoZipSources   := false
 
 By default, the NetLogo Extension Plugin builds the jar files for the project and
 copies them and any dependencies into the root of the project repository when you
-run the `package` sbt command.  The extension will also copy any files you specify 
-using the `netLogoPackageExtras` setting in your `build.sbt` file.  This lets the 
-project be used by NetLogo if it's  copied or symbolically linked to the NetLogo 
-`extensions` folder.  
+run the `package` sbt command.  The extension will also copy any files you specify
+using the `netLogoPackageExtras` setting in your `build.sbt` file.  This lets the
+project be used by NetLogo if it's  copied or symbolically linked to the NetLogo
+`extensions` folder.
 
 ### Zip Package
 
 The NetLogo Extension Plugin includes a `packageZip` sbt command that will take all the
-same fies included when you run the `package` command, along with some extras you can 
-specify with the `netLogoZipExtras` setting.  The name of the zip file will be 
+same fies included when you run the `package` command, along with some extras you can
+specify with the `netLogoZipExtras` setting.  The name of the zip file will be
 `netLogoExtName-version.zip` with `netLogoExtName` and `version` being pulled from your
 `build.sbt` settings file for sbt.  If you have your `version` set appropriately this
-should generate a file suitable for use in 
+should generate a file suitable for use in
 [the NetLogo Extensions Library](https://github.com/NetLogo/NetLogo-Libraries).
+
+### Packaging a Zip to Publish
+
+To create a zip file of your extension and all its dependencies and extra files just
+run the `packageZip` command.  It will create a `name-version.zip` file in the root of
+your folder containing all the files necessary to publish your extension to the NetLogo
+extensions library.
+
+### Ignoring the Packaged Files
+
+Because this extension creates extension binary and zip files in the root of your repository
+it's a good idea to add them to your `.gitignore` file (if you're using git):
+
+```
+*.jar
+*.zip
+# plus any others you manually add to `netLogoPackageExtras`
+```
 
 ### Including Extra Files in Build, Packaging, and Tests
 
@@ -57,7 +75,8 @@ You can use the `netLogoPackageExtras` setting to add files to the packaging and
 extension.  The setting is a sequence of tuples, the first value being a file path and the second
 being an `Option[String]` to rename the file when it's copied (`None` will use the same file name).
 This is especially useful to copy files needed for execution that are not managed by sbt or included
-as Java resources, such as external scripts.
+as Java resources, such as external scripts.  These files are also included in the zip file made
+with the `packageZip` sbt task.
 
 ```scala
 netLogoPackageExtras += (baseDirectory.value / "resources" / "include_me_1.txt", None)
@@ -72,7 +91,7 @@ included in the list are copied, and folders are recursively copied, maintaining
 netLogoTestExtras += (baseDirectory.value / "test")
 ```
 
-And you can include extra files in the `packageZip` command using the `netLogoZipExtras` setting.  This is
+And you can include extra files in the `packageZip` sbt task using the `netLogoZipExtras` setting.  This is
 useful when you're including extra docs or example models with the zip file.
 
 ```scala
