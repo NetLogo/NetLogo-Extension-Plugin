@@ -94,15 +94,20 @@ object NetLogoExtension extends AutoPlugin {
 
   type RootsMap = Map[MiniModule, Set[MiniModule]]
 
-  def rootsBabyRoots(projectIDs: Set[MiniModule], allModules: Map[MiniModule, CalledModule], rootsSoFar: RootsMap, moduleReport: CalledModule): RootsMap = {
+  def rootsBabyRoots(projectIDs: Set[MiniModule], allModules: Map[MiniModule, CalledModule], depStack: Seq[MiniModule], rootsSoFar: RootsMap, moduleReport: CalledModule): RootsMap = {
     // if the rootsSoFar already has this module, we were processed as the caller of a prior module
     if (rootsSoFar.contains(moduleReport.module)) {
       rootsSoFar
     } else {
-      val nonProjectCallers = moduleReport.callers.filter(!projectIDs.contains(_))
-      val callers           = nonProjectCallers.flatMap(allModules.get(_))
-      val newRoots          = callers.foldLeft(rootsSoFar)( (newRoots, callerReport) => rootsBabyRoots(projectIDs, allModules, newRoots, callerReport) )
-      val callerRoots       = callers.map( (callerReport) => {
+      val nonProjectCallers  = moduleReport.callers.filter(!projectIDs.contains(_))
+      val nonCircularCallers = nonProjectCallers.filter(!depStack.contains(_))
+      val callers            = nonCircularCallers.flatMap(allModules.get(_))
+      val newDepStack        = depStack :+ moduleReport.module
+      val newRoots           = callers.foldLeft(rootsSoFar)( (newRoots, callerReport) =>
+        rootsBabyRoots(projectIDs, allModules, newDepStack, newRoots, callerReport)
+      )
+
+      val callerRoots = callers.map( (callerReport) => {
         val callerRoots = newRoots.getOrElse(callerReport.module, throw new Exception(s"Did not find a roots entry for $callerReport?"))
         // if it has no callers, it's the root.
         if (callerRoots.isEmpty) {
@@ -118,7 +123,7 @@ object NetLogoExtension extends AutoPlugin {
 
   def createRootsMap(projectIDs: Set[MiniModule], moduleReports: Seq[CalledModule]): RootsMap = {
     val allModules       = moduleReports.map( (m) => (m.module, m) ).toMap
-    val reportsToRootMap = (rootsSoFar: RootsMap, moduleReport: CalledModule) => rootsBabyRoots(projectIDs, allModules, rootsSoFar, moduleReport)
+    val reportsToRootMap = (rootsSoFar: RootsMap, moduleReport: CalledModule) => rootsBabyRoots(projectIDs, allModules, Seq(), rootsSoFar, moduleReport)
     moduleReports.foldLeft(Map[MiniModule, Set[MiniModule]]())(reportsToRootMap)
   }
 
