@@ -12,7 +12,17 @@ scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xlint", "-Xfatal-warnings"
 
 name := "Hello-Extension"
 
-libraryDependencies ++= Seq("commons-lang" % "commons-lang" % "2.6")
+// while working on the vid extension, this plugin caused a duplicate entry for the `packageZip` command
+// so included here for testing
+javaCppVersion    :=  "1.5.7"
+javaCppPresetLibs ++= Seq("opencv" -> "4.5.5", "openblas" -> "0.3.19")
+javaCppPlatform   :=  Seq("windows-x86_64", "windows-x86", "macosx-arm64", "macosx-x86_64", "linux-x86", "linux-x86_64")
+
+libraryDependencies ++= Seq(
+  "org.apache.commons" % "commons-lang3" % "3.11"
+, "org.apache.commons" % "commons-text" % "1.9"
+, "org.bytedeco" % "javacv" % "1.5.7"
+)
 
 netLogoVersion       :=  "6.2.2"
 netLogoClassManager  :=  "org.nlogo.extensions.helloscala.HelloScalaExtension"

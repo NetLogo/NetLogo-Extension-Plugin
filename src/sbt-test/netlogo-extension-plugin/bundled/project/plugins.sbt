@@ -1,3 +1,5 @@
+addSbtPlugin("org.bytedeco" % "sbt-javacpp" % "1.17")
+
 {
   val pluginVersion = System.getProperty("plugin.version")
   if (pluginVersion == null)

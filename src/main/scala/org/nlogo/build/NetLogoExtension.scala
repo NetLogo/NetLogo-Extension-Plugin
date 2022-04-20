@@ -175,7 +175,9 @@ object NetLogoExtension extends AutoPlugin {
     netLogoZipExtras     := Seq(),
 
     netLogoPackagedFiles := {
-      val dependencies = getExtensionDependencies(Set(projectID.value, crossProjectID.value), netLogoDependencies.value, (Compile / updateFull).value).map( (d) => (d, d.getName) )
+      val projectIDs   = Set(projectID.value, crossProjectID.value)
+      val report       = (Compile / updateFull).value
+      val dependencies = getExtensionDependencies(projectIDs, netLogoDependencies.value, report).map( (d) => (d, d.getName) )
       val extras       = netLogoPackageExtras.value.map({ case (extraFile, maybeRename) => (extraFile, maybeRename.getOrElse(extraFile.getName)) })
       val extensionJar = (Compile / packageBin / artifactPath).value
       dependencies ++ extras :+ (extensionJar -> s"${netLogoExtName.value}.jar")
@@ -196,8 +198,10 @@ object NetLogoExtension extends AutoPlugin {
         val newFile = IO.relativize(baseDirectory.value, file).get
         (file, newFile)
       })
+      val allFiles = netLogoFiles ++ extraZipFiles
+      val uniqueFiles = allFiles.toSet
       val packageZipFile = baseDirectory.value / s"${netLogoExtName.value}-${version.value}.zip"
-      IO.zip(netLogoFiles ++ extraZipFiles, packageZipFile)
+      IO.zip(uniqueFiles, packageZipFile)
       packageZipFile
     },
 

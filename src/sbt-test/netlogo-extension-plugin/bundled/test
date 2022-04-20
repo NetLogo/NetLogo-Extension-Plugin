@@ -1,6 +1,7 @@
 > package
 $ exists helloscala.jar
-$ exists commons-lang-2.6.jar
+$ exists commons-lang3-3.11.jar
+$ exists commons-text-1.9.jar
 $ exists .bundledFiles
 $ absent netlogo-6.2.2-tests.jar
 $ absent netlogo-6.2.2.jar
@@ -9,7 +10,8 @@ $ absent gluegen-rt.jar
 > test
 > clean
 $ absent helloscala.jar
-$ absent commons-lang-2.6.jar
+$ absent commons-lang3-3.11.jar
+$ absent commons-text-1.9.jar
 $ absent .bundledFiles
 $ absent extensions/helloscala/helloscala.jar
 $ absent extensions/helloscala/test-docs/test_me_1.txt
@@ -20,7 +22,8 @@ $ absent extensions/helloscala
 $ exists helloscala-0.0.1.zip
 > unzipPackage
 $ exists helloscala-0.0.1-unzipped/helloscala.jar
-$ exists helloscala-0.0.1-unzipped/commons-lang-2.6.jar
+$ exists helloscala-0.0.1-unzipped/commons-lang3-3.11.jar
+$ exists helloscala-0.0.1-unzipped/commons-text-1.9.jar
 $ exists helloscala-0.0.1-unzipped/test-docs/test_me_1.txt
 $ exists helloscala-0.0.1-unzipped/test_me_2.txt
 $ exists helloscala-0.0.1-unzipped/test-docs/sub1/test_me_3.txt
