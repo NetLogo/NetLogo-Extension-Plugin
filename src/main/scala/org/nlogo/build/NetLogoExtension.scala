@@ -58,15 +58,18 @@ object NetLogoExtension extends AutoPlugin {
   override def requires: Plugins = JvmPlugin
 
   object autoImport {
-    val netLogoVersion       = settingKey[String]("version of NetLogo to depend on")
-    val netLogoExtName       = settingKey[String]("extension-name")
-    val netLogoClassManager  = settingKey[String]("extension-class-manager")
-    val netLogoZipSources    = settingKey[Boolean]("extension-zip-sources")
-    val netLogoTarget        = settingKey[Target]("extension-target")
-    val netLogoPackageExtras = settingKey[Seq[(File, Option[String])]]("extension-package-extras")
-    val netLogoTestExtras    = settingKey[Seq[File]]("extension-test-extras")
-    val netLogoZipExtras     = settingKey[Seq[File]]("extension-zip-extras")
-    val packageZip           = taskKey[File]("package to zip file for publishing via the extension manager")
+    val netLogoVersion          = settingKey[String]("version of NetLogo to depend on")
+    val netLogoExtName          = settingKey[String]("extension-name")
+    val netLogoClassManager     = settingKey[String]("extension-class-manager")
+    val netLogoZipSources       = settingKey[Boolean]("extension-zip-sources")
+    val netLogoTarget           = settingKey[Target]("extension-target")
+    val netLogoPackageExtras    = settingKey[Seq[(File, Option[String])]]("extension-package-extras")
+    val netLogoTestExtras       = settingKey[Seq[File]]("extension-test-extras")
+    val netLogoZipExtras        = settingKey[Seq[File]]("extension-zip-extras")
+    val netLogoShortDescription = settingKey[String]("extension-short-description")
+    val netLogoLongDescription  = settingKey[String]("extension-long-description")
+    val netLogoHomepage         = settingKey[String]("extension-homepage")
+    val packageZip              = taskKey[File]("package to zip file for publishing via the extension manager")
   }
 
   lazy val netLogoAPIVersion      = taskKey[String]("APIVersion of NetLogo associated with compilation target")
@@ -167,12 +170,15 @@ object NetLogoExtension extends AutoPlugin {
 
   override lazy val projectSettings = Seq(
 
-    netLogoExtName       := name.value,
-    netLogoTarget        := NetLogoExtension.directoryTarget(baseDirectory.value),
-    netLogoZipSources    := true,
-    netLogoPackageExtras := Seq(),
-    netLogoTestExtras    := Seq(),
-    netLogoZipExtras     := Seq(),
+    netLogoExtName          := name.value,
+    netLogoTarget           := NetLogoExtension.directoryTarget(baseDirectory.value),
+    netLogoZipSources       := true,
+    netLogoPackageExtras    := Seq(),
+    netLogoTestExtras       := Seq(),
+    netLogoZipExtras        := Seq(),
+    netLogoShortDescription := name.value,
+    netLogoLongDescription  := "",
+    netLogoHomepage         := "",
 
     netLogoPackagedFiles := {
       val projectIDs   = Set(projectID.value, crossProjectID.value)
@@ -198,10 +204,23 @@ object NetLogoExtension extends AutoPlugin {
         val newFile = IO.relativize(baseDirectory.value, file).get
         (file, newFile)
       })
-      val allFiles = netLogoFiles ++ extraZipFiles
-      val uniqueFiles = allFiles.toSet
-      val packageZipFile = baseDirectory.value / s"${netLogoExtName.value}-${version.value}.zip"
+      val allFiles       = netLogoFiles ++ extraZipFiles
+      val uniqueFiles    = allFiles.toSet
+      val zipName        = s"${netLogoExtName.value}-${version.value}.zip"
+      val packageZipFile = baseDirectory.value / zipName
       IO.zip(uniqueFiles, packageZipFile)
+      val json =
+        s"""|{
+        |  name:             "${name.value}"
+        |  codeName:         "${netLogoExtName.value}"
+        |  shortDescription: "${netLogoShortDescription.value}"
+        |  longDescription:  "${netLogoLongDescription.value}"
+        |  version:          "${version.value}"
+        |  homepage:         "${netLogoHomepage.value}"
+        |  downloadURL:      "https://raw.githubusercontent.com/NetLogo/NetLogo-Libraries/6.1/extensions/$zipName"
+        |}""".stripMargin
+      val libJson = s"Here is a JSON entry appropriate for use in the `libraries.conf` file of the NetLogo-Libraries repo: \n$json"
+      sbt.Keys.streams.value.log.info(libJson)
       packageZipFile
     },
 

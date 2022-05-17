@@ -26,10 +26,15 @@ addSbtPlugin("org.nlogo" % "netlogo-extension-plugin" % "5.2.0")
 ```scala
 enablePlugins(org.nlogo.build.NetLogoExtension)
 
-netLogoVersion      := "6.2.2"
-netLogoClassManager := "HelloScalaExtension"
-netLogoExtName      := "helloscala"
-netLogoZipSources   := false
+name := "Hello Scala Extension"
+
+netLogoVersion          := "6.2.2"
+netLogoClassManager     := "HelloScalaExtension"
+netLogoExtName          := "helloscala"
+// these values are used to generate a JSON snippet for use in the NetLogo-Libraries repo when using the `packageZip` command.
+netLogoShortDescription := "Hello Scala for Extension in NetLogo"
+netLogoLongDescription  := "Very long text that most people won't read."
+netLogoHomepage         := "https://github.com/NetLogo/NetLogo-Extension-Plugin"
 ```
 
 ### Building to Base Directory

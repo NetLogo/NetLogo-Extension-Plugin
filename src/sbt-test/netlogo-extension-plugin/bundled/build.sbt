@@ -31,6 +31,9 @@ netLogoZipSources    :=  false
 netLogoPackageExtras +=  (baseDirectory.value / "resources" / "include_me_1.txt", None)
 netLogoTestExtras    ++= Seq(baseDirectory.value / "test-docs", baseDirectory.value / "test_me_2.txt")
 netLogoZipExtras     ++= Seq(baseDirectory.value / "test-docs", baseDirectory.value / "test_me_2.txt")
+netLogoShortDescription := "Hello Scala for Extension in NetLogo"
+netLogoLongDescription  := "Very long text that most people won't read."
+netLogoHomepage         := "https://github.com/NetLogo/NetLogo-Extension-Plugin"
 
 // for testing the creation of the zip file
 val unzipPackage = taskKey[File]("unzip the created zip file for checking")
