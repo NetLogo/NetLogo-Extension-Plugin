@@ -1,4 +1,0 @@
-> package
-$ exists helloscala.jar
-> clean
-$ absent helloscala.jar
