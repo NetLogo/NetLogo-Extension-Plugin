@@ -27,7 +27,6 @@ libraryDependencies ++= Seq(
 netLogoVersion       :=  "6.2.2"
 netLogoClassManager  :=  "org.nlogo.extensions.helloscala.HelloScalaExtension"
 netLogoExtName       :=  "helloscala"
-netLogoZipSources    :=  false
 netLogoPackageExtras +=  (baseDirectory.value / "resources" / "include_me_1.txt", None)
 netLogoTestExtras    ++= Seq(baseDirectory.value / "test-docs", baseDirectory.value / "test_me_2.txt")
 netLogoZipExtras     ++= Seq(baseDirectory.value / "test-docs", baseDirectory.value / "test_me_2.txt")

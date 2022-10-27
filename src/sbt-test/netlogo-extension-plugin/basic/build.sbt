@@ -13,4 +13,3 @@ name := "Hello-Extension"
 netLogoVersion      := "6.2.2"
 netLogoClassManager := "HelloScalaExtension"
 netLogoExtName      := "helloscala"
-netLogoZipSources   := false

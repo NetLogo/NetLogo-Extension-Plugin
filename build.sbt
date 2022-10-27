@@ -1,7 +1,8 @@
 enablePlugins(ScriptedPlugin)
 
-sbtPlugin    := true
-scalaVersion := "2.12.3"
+sbtPlugin      := true
+scalaVersion   := "2.12.17"
+scalacOptions ++= Seq("-unchecked", "-deprecation", "-feature", "-Xfatal-warnings", "-Xlint", "-release", "11")
 
 name         := "netlogo-extension-plugin"
 organization := "org.nlogo"

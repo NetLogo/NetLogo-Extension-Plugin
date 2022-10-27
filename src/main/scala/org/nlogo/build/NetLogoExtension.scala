@@ -6,10 +6,9 @@ import sbt._
 import sbt.Keys._
 import sbt.io.{ CopyOptions }
 import sbt.plugins.JvmPlugin
-import sbt.internal.inc.classpath.ClasspathUtilities
+import sbt.internal.inc.classpath.ClasspathUtil
 
-import sbt.librarymanagement.{ ModuleID, OrganizationArtifactReport, UpdateReport }
-import sbt.io.NameFilter
+import sbt.librarymanagement.{ ModuleID, UpdateReport }
 
 import scala.sys.process.Process
 
@@ -26,15 +25,9 @@ object NetLogoExtension extends AutoPlugin {
 
     override def create(sourceMap: Seq[(File, String)]): Unit = {
       val zipMap = sourceMap.map { case (file, path) => (file, s"$extName/$path") }
-      IO.zip(zipMap, baseDir / s"$extName.zip")
+      IO.zip(zipMap, baseDir / s"$extName.zip", None)
     }
 
-    private def sourcesToZip: Seq[(File, String)] =
-      if (includeSources) {
-        val allFiles = Process(s"git ls-files", baseDir).lineStream_!.filterNot(_ == ".gitignore")
-        allFiles.map(new File(_)) zip allFiles
-      } else
-        Seq()
   }
 
   class DirectoryTarget(baseDir: File) extends Target {
@@ -61,7 +54,6 @@ object NetLogoExtension extends AutoPlugin {
     val netLogoVersion          = settingKey[String]("version of NetLogo to depend on")
     val netLogoExtName          = settingKey[String]("extension-name")
     val netLogoClassManager     = settingKey[String]("extension-class-manager")
-    val netLogoZipSources       = settingKey[Boolean]("extension-zip-sources")
     val netLogoTarget           = settingKey[Target]("extension-target")
     val netLogoPackageExtras    = settingKey[Seq[(File, Option[String])]]("extension-package-extras")
     val netLogoTestExtras       = settingKey[Seq[File]]("extension-test-extras")
@@ -172,7 +164,6 @@ object NetLogoExtension extends AutoPlugin {
 
     netLogoExtName          := name.value,
     netLogoTarget           := NetLogoExtension.directoryTarget(baseDirectory.value),
-    netLogoZipSources       := true,
     netLogoPackageExtras    := Seq(),
     netLogoTestExtras       := Seq(),
     netLogoZipExtras        := Seq(),
@@ -190,7 +181,10 @@ object NetLogoExtension extends AutoPlugin {
     },
 
     netLogoAPIVersion := {
-      val loader = ClasspathUtilities.makeLoader(Attributed.data((Compile / dependencyClasspath).value), scalaInstance.value)
+      val loader = ClasspathUtil.makeLoader(
+        Attributed.data((Compile / dependencyClasspath).value).map(_.toPath)
+      , scalaInstance.value
+      )
       loader
         .loadClass("org.nlogo.api.APIVersion")
         .getMethod("version")
@@ -208,7 +202,7 @@ object NetLogoExtension extends AutoPlugin {
       val uniqueFiles    = allFiles.toSet
       val zipName        = s"${netLogoExtName.value}-${version.value}.zip"
       val packageZipFile = baseDirectory.value / zipName
-      IO.zip(uniqueFiles, packageZipFile)
+      IO.zip(uniqueFiles, packageZipFile, None)
       val json =
         s"""|{
         |  name:             "${name.value}"
@@ -289,7 +283,6 @@ object NetLogoExtension extends AutoPlugin {
       }),
 
       Tests.Cleanup( () => {
-        val files = netLogoPackagedFiles.value: @sbtUnchecked
         IO.delete(extensionTestDirectory.value)
       })
 

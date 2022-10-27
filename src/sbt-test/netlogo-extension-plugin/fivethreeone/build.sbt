@@ -7,5 +7,3 @@ netLogoVersion      := "5.3.1"
 netLogoClassManager := "HelloScalaExtension"
 
 netLogoExtName      := "helloscala"
-
-netLogoZipSources   := false

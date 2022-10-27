@@ -12,7 +12,7 @@ jobs:
 
       - uses: olafurpg/setup-scala@v10
         with:
-          java-version: adopt@1.8
+          java-version: openjdk@1.17.0
 
       - run: sbt -v update compile
       - run: sbt -v scripted
