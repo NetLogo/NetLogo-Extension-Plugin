@@ -195,7 +195,7 @@ object NetLogoExtension extends AutoPlugin {
       (Compile / packageBin).value
       val netLogoFiles = netLogoPackagedFiles.value
       val extraZipFiles = NetLogoExtension.getAllFiles(netLogoZipExtras.value).map( (file) => {
-        val newFile = IO.relativize(baseDirectory.value, file).get
+        val newFile = IO.relativize((new File(".")).toPath.toAbsolutePath.toFile, file).get
         (file, newFile)
       })
       val allFiles       = netLogoFiles ++ extraZipFiles
