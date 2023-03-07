@@ -256,8 +256,8 @@ object NetLogoExtension extends AutoPlugin {
       "org.nlogo"          %  "netlogo"    % netLogoVersion.value
     , "org.nlogo"          %  "netlogo"    % netLogoVersion.value % Test classifier "tests"
     , "org.scalatest"      %% "scalatest"  % "3.2.10" % Test
-    , "org.jogamp.jogl"    %  "jogl-all"   % "2.4.0" from "https://jogamp.org/deployment/archive/rc/v2.4.0-rc-20210111/jar/jogl-all.jar"
-    , "org.jogamp.gluegen" %  "gluegen-rt" % "2.4.0" from "https://jogamp.org/deployment/archive/rc/v2.4.0-rc-20210111/jar/gluegen-rt.jar"
+    , "org.jogamp.jogl"    %  "jogl-all"   % "2.4.0" from "https://jogamp.org/deployment/archive/rc/v2.4.0/jar/jogl-all.jar"
+    , "org.jogamp.gluegen" %  "gluegen-rt" % "2.4.0" from "https://jogamp.org/deployment/archive/rc/v2.4.0/jar/gluegen-rt.jar"
     ),
 
     libraryDependencies ++= netLogoDependencies.value,
