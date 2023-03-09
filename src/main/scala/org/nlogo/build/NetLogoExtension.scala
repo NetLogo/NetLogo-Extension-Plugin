@@ -61,6 +61,7 @@ object NetLogoExtension extends AutoPlugin {
     val netLogoShortDescription = settingKey[String]("extension-short-description")
     val netLogoLongDescription  = settingKey[String]("extension-long-description")
     val netLogoHomepage         = settingKey[String]("extension-homepage")
+    val netLogoJar              = settingKey[Option[File]]("extension-netlogo-jar-file-path for overriding the default resolver using the netlogo.jar.file system property")
     val packageZip              = taskKey[File]("package to zip file for publishing via the extension manager")
   }
 
@@ -171,6 +172,11 @@ object NetLogoExtension extends AutoPlugin {
     netLogoLongDescription  := "",
     netLogoHomepage         := "",
 
+    netLogoJar := {
+      val maybePath = Option(System.getProperty("netlogo.jar.file"))
+      maybePath.map( (p) => new File(p) ).filter( (f) => f.exists() )
+    },
+
     netLogoPackagedFiles := {
       val projectIDs   = Set(projectID.value, crossProjectID.value)
       val report       = (Compile / updateFull).value
@@ -252,9 +258,16 @@ object NetLogoExtension extends AutoPlugin {
 
     resolvers += "netlogo" at "https://dl.cloudsmith.io/public/netlogo/netlogo/maven/",
 
-    netLogoDependencies := Seq(
-      "org.nlogo"          %  "netlogo"    % netLogoVersion.value
-    , "org.nlogo"          %  "netlogo"    % netLogoVersion.value % Test classifier "tests"
+    // We do this little local file override so that bundled extensions can be easily built and tested against work in
+    // progress in the NetLogo repo.  There might be other uses for it, too.  The odd bit is we don't map the tests jar,
+    // too, because NetLogo runs the extension language tests directly, so it shouldn't be necessary.  If that turns out
+    // to be wrong, this can be updated to do the tests as well.  -Jeremy B March 2023
+    netLogoDependencies := Seq(netLogoJar.value.map( (f) =>
+      "org.nlogo" % "netlogo" % netLogoVersion.value from s"file:///${f.toString}"
+    ).getOrElse(
+      "org.nlogo" % "netlogo" % netLogoVersion.value
+    )) ++ Seq(
+      "org.nlogo"          %  "netlogo"    % netLogoVersion.value % Test classifier "tests"
     , "org.scalatest"      %% "scalatest"  % "3.2.10" % Test
     , "org.jogamp.jogl"    %  "jogl-all"   % "2.4.0" from "https://jogamp.org/deployment/archive/rc/v2.4.0/jar/jogl-all.jar"
     , "org.jogamp.gluegen" %  "gluegen-rt" % "2.4.0" from "https://jogamp.org/deployment/archive/rc/v2.4.0/jar/gluegen-rt.jar"
