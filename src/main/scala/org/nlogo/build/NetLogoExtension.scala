@@ -262,11 +262,13 @@ object NetLogoExtension extends AutoPlugin {
     // progress in the NetLogo repo.  There might be other uses for it, too.  The odd bit is we don't map the tests jar,
     // too, because NetLogo runs the extension language tests directly, so it shouldn't be necessary.  If that turns out
     // to be wrong, this can be updated to do the tests as well.  -Jeremy B March 2023
-    netLogoDependencies := Seq(netLogoJar.value.map( (f) =>
-      "org.nlogo" % "netlogo" % netLogoVersion.value from s"file:///${f.toString}"
-    ).getOrElse(
-      "org.nlogo" % "netlogo" % netLogoVersion.value
-    )) ++ Seq(
+
+    // Turns out the main jar needs to be unmanaged when the property is set, because the default behavior of sbt and
+    // Coursier is to use the jar from cache, even when a `from URL` path is used.  It feels a little hacky, but it
+    // worked in testing, so we'll go with it.  -Jeremy B September 2023
+    (Compile / unmanagedJars) ++= netLogoJar.value.map( (f) => Seq(f).classpath ).getOrElse(Seq()),
+    netLogoDependencies := netLogoJar.value.map( (_) => Seq() ).getOrElse(Seq("org.nlogo" % "netlogo" % netLogoVersion.value))
+    ++ Seq(
       "org.nlogo"          %  "netlogo"    % netLogoVersion.value % Test classifier "tests"
     , "org.scalatest"      %% "scalatest"  % "3.2.10" % Test
     , "org.jogamp.jogl"    %  "jogl-all"   % "2.4.0" from "https://jogamp.org/deployment/archive/rc/v2.4.0/jar/jogl-all.jar"
