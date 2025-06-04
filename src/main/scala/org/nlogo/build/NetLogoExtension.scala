@@ -140,7 +140,7 @@ object NetLogoExtension extends AutoPlugin {
       val callers = if (miniNetLogoDeps.contains(module)) {
         Set[MiniModule]()
       } else {
-        m.callers.map( (c) => miniturizeModule(c.caller) ).toSet
+        m.callers.map((c) => miniturizeModule(c.caller)).toSet.filter(_ != module)
       }
       CalledModule(module, callers)
     })
