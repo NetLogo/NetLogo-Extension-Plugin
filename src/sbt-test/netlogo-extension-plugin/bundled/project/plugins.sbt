@@ -1,9 +1,1 @@
 addSbtPlugin("org.bytedeco" % "sbt-javacpp" % "1.17")
-
-{
-  val pluginVersion = System.getProperty("plugin.version")
-  if (pluginVersion == null)
-    throw new RuntimeException("""|The system property 'plugin.version' is not defined.
-      |Specify this property using the scriptedLaunchOpts -D.""".stripMargin)
-    else addSbtPlugin("org.nlogo" % "netlogo-extension-plugin" % pluginVersion)
-}

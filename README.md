@@ -1,8 +1,8 @@
 # NetLogo Extension Plugin
 
-This plugin provides common build boilerplate for NetLogo 6 and 5.3.1 extensions. For versions before 5.3.1, please refer to [version 2.2_5.3](https://github.com/NetLogo/NetLogo-Extension-Plugin/tree/v2.2_5.3-M1)
+This plugin provides common build boilerplate for NetLogo 7 and 6.
 
-Currently, the plugin targets **SBT 1.3.13** (use v3.1 for SBT 0.13).
+Currently, the plugin targets **SBT 1.3.13**.
 
 ## Usage
 
@@ -18,7 +18,7 @@ the `packageZip` command with the `netLogoZipExtras` setting.
 ```scala
 resolvers += "netlogo-extension-plugin" at "https://dl.cloudsmith.io/public/netlogo/netlogo-extension-plugin/maven/"
 
-addSbtPlugin("org.nlogo" % "netlogo-extension-plugin" % "5.2.3")
+addSbtPlugin("org.nlogo" % "netlogo-extension-plugin" % "7.0.0")
 ```
 
 `build.sbt`
@@ -28,7 +28,7 @@ enablePlugins(org.nlogo.build.NetLogoExtension)
 
 name := "Hello Scala Extension"
 
-netLogoVersion          := "6.2.2"
+netLogoVersion          := "7.0.0"
 netLogoClassManager     := "HelloScalaExtension"
 netLogoExtName          := "helloscala"
 // these values are used to generate a JSON snippet for use in the NetLogo-Libraries repo when using the `packageZip` command.
