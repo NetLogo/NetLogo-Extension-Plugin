@@ -217,7 +217,6 @@ object NetLogoExtension extends AutoPlugin {
         |  longDescription:  "${netLogoLongDescription.value}"
         |  version:          "${version.value}"
         |  homepage:         "${netLogoHomepage.value}"
-        |  downloadURL:      "https://raw.githubusercontent.com/NetLogo/NetLogo-Libraries/6.1/extensions/$zipName"
         |}""".stripMargin
       val libJson = s"Here is a JSON entry appropriate for use in the `libraries.conf` file of the NetLogo-Libraries repo: \n$json"
       sbt.Keys.streams.value.log.info(libJson)
