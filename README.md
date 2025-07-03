@@ -2,7 +2,7 @@
 
 This plugin provides common build boilerplate for NetLogo 7 and 6.
 
-Currently, the plugin targets **SBT 1.3.13**.
+Currently, the plugin targets **SBT 1.7.2**.
 
 ## Usage
 
