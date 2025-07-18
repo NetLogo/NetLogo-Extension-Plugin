@@ -1,6 +1,7 @@
 package org.nlogo.build
 
 import java.io.File
+import java.util.jar.JarFile
 
 import sbt._
 import sbt.Keys._
@@ -66,7 +67,8 @@ object NetLogoExtension extends AutoPlugin {
   }
 
   lazy val netLogoAPIVersion      = taskKey[String]("APIVersion of NetLogo associated with compilation target")
-  lazy val netLogoDependencies    = settingKey[Seq[ModuleID]]("NetLogo libraries and dependencies")
+  lazy val netLogoDependencies    = taskKey[Seq[ModuleID]]("NetLogo libraries and dependencies")
+  lazy val extraDependencies      = settingKey[Seq[ModuleID]]("Extra dependencies from NetLogo")
   lazy val crossProjectID         = settingKey[ModuleID]("The cross-project ModuleID version of the projectID setting")
   lazy val extensionTestDirectory = settingKey[File]("extension-test-directory")
   lazy val extensionTestTarget    = settingKey[Target]("extension-test-target")
@@ -266,7 +268,8 @@ object NetLogoExtension extends AutoPlugin {
     // Coursier is to use the jar from cache, even when a `from URL` path is used.  It feels a little hacky, but it
     // worked in testing, so we'll go with it.  -Jeremy B September 2023
     (Compile / unmanagedJars) ++= netLogoJar.value.map( (f) => Seq(f).classpath ).getOrElse(Seq()),
-    netLogoDependencies := netLogoJar.value.map( (_) => Seq() ).getOrElse(Seq("org.nlogo" % "netlogo" % netLogoVersion.value))
+
+    extraDependencies := netLogoJar.value.map(_ => Seq()).getOrElse(Seq("org.nlogo" % "netlogo" % netLogoVersion.value))
     ++ Seq(
       "org.nlogo"          %  "netlogo"    % netLogoVersion.value % Test classifier "tests"
     , "org.scalatest"      %% "scalatest"  % "3.2.10" % Test
@@ -274,7 +277,18 @@ object NetLogoExtension extends AutoPlugin {
     , "org.jogamp.gluegen" %  "gluegen-rt" % "2.4.0" from "https://jogamp.org/deployment/archive/rc/v2.4.0/jar/gluegen-rt.jar"
     ),
 
-    libraryDependencies ++= netLogoDependencies.value,
+    netLogoDependencies := netLogoJar.value.map { path =>
+      val jar = new JarFile(path)
+      val classpath = jar.getManifest.getMainAttributes.getValue("Class-Path")
+
+      jar.close()
+
+      val jarDeps = classpath.split(" ").toSeq.map(_.stripSuffix(".jar").split("-").dropRight(1).mkString("-"))
+
+      (Compile / dependencyClasspath).value.flatMap(_.get(moduleID.key)).filter(m => jarDeps.contains(m.name))
+    }.getOrElse(Seq()) ++ extraDependencies.value,
+
+    libraryDependencies ++= extraDependencies.value,
 
     exportJars := true,
 
