@@ -273,8 +273,8 @@ object NetLogoExtension extends AutoPlugin {
     ++ Seq(
       "org.nlogo"          %  "netlogo"    % netLogoVersion.value % Test classifier "tests"
     , "org.scalatest"      %% "scalatest"  % "3.2.10" % Test
-    , "org.jogamp.jogl"    %  "jogl-all"   % "2.4.0" from "https://jogamp.org/deployment/archive/rc/v2.4.0/jar/jogl-all.jar"
-    , "org.jogamp.gluegen" %  "gluegen-rt" % "2.4.0" from "https://jogamp.org/deployment/archive/rc/v2.4.0/jar/gluegen-rt.jar"
+    , "org.jogamp.jogl"    %  "jogl-all"   % "2.4.0" from cclArtifacts("jogl-all-2.4.0.jar")
+    , "org.jogamp.gluegen" %  "gluegen-rt" % "2.4.0" from cclArtifacts("gluegen-rt-2.4.0.jar")
     ),
 
     netLogoDependencies := netLogoJar.value.map { path =>
@@ -317,4 +317,8 @@ object NetLogoExtension extends AutoPlugin {
     )
 
   )
+
+  private def cclArtifacts(path: String): String =
+    s"https://s3.amazonaws.com/ccl-artifacts/$path"
+
 }
