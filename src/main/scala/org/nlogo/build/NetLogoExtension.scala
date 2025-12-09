@@ -200,13 +200,24 @@ object NetLogoExtension extends AutoPlugin {
     },
 
     packageZip := {
-      (Compile / packageBin).value
+      Def.taskDyn {
+        val name = netLogoExtName.value
+        val manager = netLogoClassManager.value
+        val jar = (Compile / packageBin).value
+        val prims = (Compile / sourceManaged).value / "prims.json"
+
+        prims.getParentFile.mkdirs()
+
+        (Compile / runMain).toTask(s" org.nlogo.build.PrimsJson $name $manager $jar $prims")
+      }.value
+
       val netLogoFiles = netLogoPackagedFiles.value
       val extraZipFiles = NetLogoExtension.getAllFiles(netLogoZipExtras.value).map( (file) => {
         val newFile = IO.relativize((new File(".")).toPath.toAbsolutePath.toFile, file).get
         (file, newFile)
       })
-      val allFiles       = netLogoFiles ++ extraZipFiles
+      val primsFile      = ((Compile / sourceManaged).value / "prims.json", "prims.json")
+      val allFiles       = netLogoFiles ++ extraZipFiles :+ primsFile
       val uniqueFiles    = allFiles.toSet
       val zipName        = s"${netLogoExtName.value}-${version.value}.zip"
       val packageZipFile = baseDirectory.value / zipName
@@ -257,7 +268,10 @@ object NetLogoExtension extends AutoPlugin {
       IO.delete(netLogoTarget.value.producedFiles(netLogoPackagedFiles.value))
     },
 
-    resolvers += "netlogo" at "https://dl.cloudsmith.io/public/netlogo/netlogo/maven/",
+    resolvers ++= Seq(
+      "netlogo" at "https://dl.cloudsmith.io/public/netlogo/netlogo/maven/",
+      "netlogo-prims-json" at "https://dl.cloudsmith.io/public/netlogo/netlogo-prims-json/maven/"
+    ),
 
     // We do this little local file override so that bundled extensions can be easily built and tested against work in
     // progress in the NetLogo repo.  There might be other uses for it, too.  The odd bit is we don't map the tests jar,
@@ -271,10 +285,13 @@ object NetLogoExtension extends AutoPlugin {
 
     extraDependencies := netLogoJar.value.map(_ => Seq()).getOrElse(Seq("org.nlogo" % "netlogo" % netLogoVersion.value))
     ++ Seq(
-      "org.nlogo"          %  "netlogo"    % netLogoVersion.value % Test classifier "tests"
-    , "org.scalatest"      %% "scalatest"  % "3.2.10" % Test
-    , "org.jogamp.jogl"    %  "jogl-all"   % "2.4.0" from cclArtifacts("jogl-all-2.4.0.jar")
-    , "org.jogamp.gluegen" %  "gluegen-rt" % "2.4.0" from cclArtifacts("gluegen-rt-2.4.0.jar")
+      "org.nlogo"          %  "netlogo"              % netLogoVersion.value % Test classifier "tests"
+    , "org.scalatest"      %% "scalatest"            % "3.2.10" % Test
+    , "org.jogamp.jogl"    %  "jogl-all"             % "2.4.0" from cclArtifacts("jogl-all-2.4.0.jar")
+    , "org.jogamp.gluegen" %  "gluegen-rt"           % "2.4.0" from cclArtifacts("gluegen-rt-2.4.0.jar")
+      // for some reason, getExtensionDependencies gets confused if this dependency is specified with %%,
+      // so the cross-version suffix _3 needs to be added manually. (Isaac B 12/9/25)
+    , "org.nlogo"          %  "netlogo-prims-json_3" % "1.0.0"
     ),
 
     netLogoDependencies := netLogoJar.value.map { path =>
