@@ -3,8 +3,8 @@ $ exists helloscala.jar
 $ exists commons-lang3-3.11.jar
 $ exists commons-text-1.9.jar
 $ exists .bundledFiles
-$ absent netlogo-6.2.2-tests.jar
-$ absent netlogo-6.2.2.jar
+$ absent netlogo-7.0.3-tests.jar
+$ absent netlogo-7.0.3.jar
 $ absent jogl-all.jar
 $ absent gluegen-rt.jar
 > test
@@ -27,3 +27,4 @@ $ exists helloscala-0.0.1-unzipped/commons-text-1.9.jar
 $ exists helloscala-0.0.1-unzipped/test-docs/test_me_1.txt
 $ exists helloscala-0.0.1-unzipped/test_me_2.txt
 $ exists helloscala-0.0.1-unzipped/test-docs/sub1/test_me_3.txt
+$ exists helloscala-0.0.1-unzipped/prims.json

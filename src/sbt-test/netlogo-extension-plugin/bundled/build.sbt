@@ -5,10 +5,10 @@ enablePlugins(NetLogoExtension)
 version    := "0.0.1"
 isSnapshot := true
 
-scalaVersion            := "2.12.17"
+scalaVersion            := "3.7.0"
 (Compile / scalaSource) := { baseDirectory.value / "src" / "main" }
 (Test / scalaSource)    := { baseDirectory.value / "src" / "test" }
-scalacOptions ++= Seq("-deprecation", "-unchecked", "-Xlint", "-Xfatal-warnings", "-encoding", "us-ascii")
+scalacOptions ++= Seq("-deprecation", "-unchecked", "-Wunused:linted", "-Xfatal-warnings", "-encoding", "us-ascii")
 
 name := "Hello-Extension"
 
@@ -24,7 +24,7 @@ libraryDependencies ++= Seq(
 , "org.bytedeco" % "javacv" % "1.5.7"
 )
 
-netLogoVersion       :=  "7.0.0-beta1"
+netLogoVersion       :=  "7.0.3"
 netLogoClassManager  :=  "org.nlogo.extensions.helloscala.HelloScalaExtension"
 netLogoExtName       :=  "helloscala"
 netLogoPackageExtras +=  (baseDirectory.value / "resources" / "include_me_1.txt", None)

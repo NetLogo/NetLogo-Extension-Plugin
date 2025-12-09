@@ -1,2 +1,1 @@
 addSbtPlugin("org.nlogo" % "netlogo-extension-plugin" % "7.0.3")
-addSbtPlugin("org.bytedeco" % "sbt-javacpp" % "1.17")
