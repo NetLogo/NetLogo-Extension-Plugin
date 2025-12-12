@@ -291,7 +291,7 @@ object NetLogoExtension extends AutoPlugin {
     , "org.jogamp.gluegen" %  "gluegen-rt"           % "2.4.0" from cclArtifacts("gluegen-rt-2.4.0.jar")
       // for some reason, getExtensionDependencies gets confused if this dependency is specified with %%,
       // so the cross-version suffix _3 needs to be added manually. (Isaac B 12/9/25)
-    , "org.nlogo"          %  "netlogo-prims-json_3" % "1.0.0"
+    , "org.nlogo"          %  "netlogo-prims-json_3" % "0.1.0"
     ),
 
     netLogoDependencies := netLogoJar.value.map { path =>
