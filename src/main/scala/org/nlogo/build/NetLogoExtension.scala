@@ -199,25 +199,33 @@ object NetLogoExtension extends AutoPlugin {
         .invoke(null).asInstanceOf[String]
     },
 
-    packageZip := {
+    (Compile / Keys.`package`) := {
       Def.taskDyn {
         val name = netLogoExtName.value
         val manager = netLogoClassManager.value
         val jar = (Compile / packageBin).value
-        val prims = (Compile / sourceManaged).value / "prims.json"
+        val prims = new File(System.getProperty("java.io.tmpdir")) / "prims.json"
 
-        prims.getParentFile.mkdirs()
+        prims.deleteOnExit()
 
         (Compile / runMain).toTask(s" org.nlogo.build.PrimsJson $name $manager $jar $prims")
       }.value
 
+      val jar = baseDirectory.value / s"${netLogoExtName.value}.jar"
+
+      Process(Seq("jar", "-uf", jar.getAbsolutePath, "-C", System.getProperty("java.io.tmpdir"), "prims.json")).!
+
+      jar
+    },
+
+    packageZip := {
+      (Compile / Keys.`package`).value
       val netLogoFiles = netLogoPackagedFiles.value
       val extraZipFiles = NetLogoExtension.getAllFiles(netLogoZipExtras.value).map( (file) => {
         val newFile = IO.relativize((new File(".")).toPath.toAbsolutePath.toFile, file).get
         (file, newFile)
       })
-      val primsFile      = ((Compile / sourceManaged).value / "prims.json", "prims.json")
-      val allFiles       = netLogoFiles ++ extraZipFiles :+ primsFile
+      val allFiles       = netLogoFiles ++ extraZipFiles
       val uniqueFiles    = allFiles.toSet
       val zipName        = s"${netLogoExtName.value}-${version.value}.zip"
       val packageZipFile = baseDirectory.value / zipName

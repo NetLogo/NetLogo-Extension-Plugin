@@ -27,4 +27,3 @@ $ exists helloscala-0.0.1-unzipped/commons-text-1.9.jar
 $ exists helloscala-0.0.1-unzipped/test-docs/test_me_1.txt
 $ exists helloscala-0.0.1-unzipped/test_me_2.txt
 $ exists helloscala-0.0.1-unzipped/test-docs/sub1/test_me_3.txt
-$ exists helloscala-0.0.1-unzipped/prims.json
