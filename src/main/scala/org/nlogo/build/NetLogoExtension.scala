@@ -204,16 +204,17 @@ object NetLogoExtension extends AutoPlugin {
         val name = netLogoExtName.value
         val manager = netLogoClassManager.value
         val jar = (Compile / packageBin).value
-        val prims = new File(System.getProperty("java.io.tmpdir")) / "prims.json"
+        val prims = new File(System.getProperty("java.io.tmpdir")) / s"$name-prims.json"
 
         prims.deleteOnExit()
 
         (Compile / runMain).toTask(s" org.nlogo.build.PrimsJson $name $manager $jar $prims")
       }.value
 
-      val jar = baseDirectory.value / s"${netLogoExtName.value}.jar"
+      val name = netLogoExtName.value
+      val jar = baseDirectory.value / s"$name.jar"
 
-      Process(Seq("jar", "-uf", jar.getAbsolutePath, "-C", System.getProperty("java.io.tmpdir"), "prims.json")).!
+      Process(Seq("jar", "-uf", jar.getAbsolutePath, "-C", System.getProperty("java.io.tmpdir"), s"$name-prims.json")).!
 
       jar
     },
